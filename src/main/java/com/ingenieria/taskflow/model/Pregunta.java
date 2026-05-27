@@ -28,6 +28,9 @@ public class Pregunta {
 
     private Integer puntaje;
 
+    @Column(columnDefinition = "TEXT")
+    private String explicacion;
+
     @JsonIgnore  // ← esto rompe la referencia circular
     @ManyToOne
     @JoinColumn(name = "cuestionario_id", nullable = false)

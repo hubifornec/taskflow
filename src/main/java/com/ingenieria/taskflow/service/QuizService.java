@@ -44,9 +44,11 @@ public class QuizService {
         Pregunta pregunta = preguntaRepository.findById(preguntaId)
                 .orElseThrow(() -> new RuntimeException("Pregunta no encontrada"));
         boolean correcto = pregunta.getRespuestaCorrecta().equalsIgnoreCase(respuesta.trim());
+        String explicacion = pregunta.getExplicacion() != null ? pregunta.getExplicacion() : "";
         return Map.of(
                 "correcto", correcto,
                 "respuestaCorrecta", pregunta.getRespuestaCorrecta(),
+                "explicacion", explicacion,
                 "puntaje", correcto ? pregunta.getPuntaje() : 0
         );
     }

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "minify": "npx terser src/main/resources/static/script.js --compress --mangle -o src/main/resources/static/script.min.js && npx terser src/main/resources/static/login.js --compress --mangle -o src/main/resources/static/login.min.js && npx cleancss -o src/main/resources/static/style.min.css src/main/resources/static/style.css && npx cleancss -o src/main/resources/static/style_additions.min.css src/main/resources/static/style_additions.css && npx cleancss -o src/main/resources/static/login.min.css src/main/resources/static/login.css && echo Minificacion completada"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +15,9 @@
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4"
+  },
+  "devDependencies": {
+    "clean-css-cli": "^5.6.3",
+    "terser": "^5.48.0"
   }
 }

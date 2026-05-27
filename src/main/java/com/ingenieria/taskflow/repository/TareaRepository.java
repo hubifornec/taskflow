@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface TareaRepository extends JpaRepository<Tarea, Long> {
+    List<Tarea> findByUsuarioIdOrderByCreatedAtDesc(Long usuarioId);
     List<Tarea> findByUsuarioId(Long usuarioId);
     List<Tarea> findByUsuarioIdAndEstado(Long usuarioId, String estado);
     long countByUsuarioId(Long usuarioId);

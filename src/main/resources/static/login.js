@@ -1,3 +1,18 @@
+// Toast lightweight para login
+function toast(msg, tipo = "success") {
+  let c = document.getElementById("ltoast");
+  if (!c) { c = document.createElement("div"); c.id = "ltoast";
+    c.style = "position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;"; 
+    document.body.appendChild(c); }
+  const colors = {success:"#22c55e",error:"#ef4444",warning:"#f59e0b",info:"#3b82f6"};
+  const t = document.createElement("div");
+  t.style = `background:${colors[tipo]||"#3b82f6"};color:#fff;padding:13px 18px;border-radius:10px;font-size:0.88rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.18);max-width:320px;opacity:0;transform:translateX(40px);transition:0.3s;`;
+  t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => { t.style.opacity = "1"; t.style.transform = "translateX(0)"; });
+  setTimeout(() => { t.style.opacity = "0"; t.style.transform = "translateX(40px)"; setTimeout(() => t.remove(), 350); }, 3500);
+}
+
 // URL BASE DEL BACKEND — debe coincidir con la de script.js
 const API_BASE = "";
 
@@ -69,8 +84,8 @@ async function registrar() {
     return;
   }
 
-  alert("Cuenta creada correctamente");
-  mostrarLogin();
+  toast("¡Cuenta creada! Ya puedes iniciar sesión.", "success");
+  setTimeout(mostrarLogin, 1500);
 }
 
 function mostrarErrorRegistro(msg) {

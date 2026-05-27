@@ -1,4 +1,85 @@
 // ============================================================
+// TOAST — Sistema profesional de notificaciones
+// ============================================================
+(function () {
+  const container = document.createElement("div");
+  container.id = "toast-container";
+  document.body.appendChild(container);
+})();
+
+function toast(mensaje, tipo = "success", duracion = 3500) {
+  const iconos = { success: "✅", error: "❌", warning: "⚠️", info: "ℹ️" };
+  const container = document.getElementById("toast-container");
+  const t = document.createElement("div");
+  t.className = `toast toast-${tipo}`;
+  t.innerHTML = `
+    <span class="toast-icon">${iconos[tipo] || "ℹ️"}</span>
+    <span class="toast-msg">${mensaje}</span>
+    <button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
+  container.appendChild(t);
+  requestAnimationFrame(() => t.classList.add("show"));
+  setTimeout(() => {
+    t.classList.add("hiding");
+    setTimeout(() => t.remove(), 350);
+  }, duracion);
+}
+
+// ============================================================
+// CONFIRM DIALOG — Reemplaza confirm() nativo
+// ============================================================
+function confirmDialog(mensaje, titulo = "¿Estás seguro?", icono = "🗑️", okTexto = "Eliminar", okClass = "") {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "confirm-overlay";
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <div class="confirm-icon">${icono}</div>
+        <div class="confirm-title">${titulo}</div>
+        <div class="confirm-msg">${mensaje}</div>
+        <div class="confirm-btns">
+          <button class="confirm-btn-cancel" id="cdc-cancel">Cancelar</button>
+          <button class="confirm-btn-ok ${okClass}" id="cdc-ok">${okTexto}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add("show"));
+
+    const close = (val) => {
+      overlay.classList.remove("show");
+      setTimeout(() => overlay.remove(), 200);
+      resolve(val);
+    };
+    overlay.querySelector("#cdc-cancel").onclick = () => close(false);
+    overlay.querySelector("#cdc-ok").onclick    = () => close(true);
+    overlay.onclick = (e) => { if (e.target === overlay) close(false); };
+  });
+}
+
+// ============================================================
+// SKELETON LOADERS
+// ============================================================
+function skeletonTarjeta() {
+  return `<div class="skeleton-card">
+    <div class="skeleton skeleton-line titulo"></div>
+    <div class="skeleton skeleton-line desc"></div>
+    <div class="skeleton skeleton-line short"></div>
+  </div>`;
+}
+
+function mostrarSkeletons(contenedorId, cantidad = 3) {
+  const el = document.getElementById(contenedorId);
+  if (el) el.innerHTML = Array(cantidad).fill(skeletonTarjeta()).join("");
+}
+
+function estadoVacio(icono, titulo, desc) {
+  return `<div class="empty-state">
+    <div class="empty-state-icon">${icono}</div>
+    <div class="empty-state-title">${titulo}</div>
+    <div class="empty-state-desc">${desc}</div>
+  </div>`;
+}
+
+// ============================================================
 // URL BASE DEL BACKEND — cambia esto cuando reinicies el túnel
 // ============================================================
 const API_BASE = "";
@@ -78,6 +159,9 @@ function cerrarSesion() {
 }
 
 async function cargarTareas() {
+  mostrarSkeletons("tareas-pendiente", 2);
+  mostrarSkeletons("tareas-en_proceso", 1);
+  mostrarSkeletons("tareas-completada", 1);
   const usuario = JSON.parse(sessionStorage.getItem("usuario") || "null");
   const res = await fetch(`${API_BASE}/tareas?usuarioId=${usuario.id}`);
   const tareas = await res.json();
@@ -136,8 +220,7 @@ async function guardarTarea() {
   const prioridad = document.getElementById("numPrioridad").value;
 
   if (!titulo) {
-    alert("El título es obligatorio");
-    return;
+    toast("El título es obligatorio", "warning"); return;
   }
 
   await fetch(API_BASE + "/tareas", {
@@ -156,6 +239,7 @@ async function guardarTarea() {
   });
 
   cerrarFormulario();
+  toast("Tarea creada correctamente", "success");
   await cargarTareas();
 }
 
@@ -522,8 +606,10 @@ function crearTarjetaTarea(tarea) {
 }
 
 async function eliminarTarea(id) {
-  if (!confirm("¿Seguro que deseas eliminar esta tarea?")) return;
-  await fetch(`${API_BASE}/tareas/${id}`, { method: "DELETE" });
+  if (!await confirmDialog("Esta acción no se puede deshacer.", "¿Eliminar tarea?", "🗑️", "Sí, eliminar")) return;
+  const res = await fetch(`${API_BASE}/tareas/${id}`, { method: "DELETE" });
+  if (res.ok) toast("Tarea eliminada", "info");
+  else toast("Error al eliminar la tarea", "error");
   await cargarTareas();
 }
 
@@ -544,8 +630,7 @@ async function guardarEdicion() {
   const fecha = document.getElementById("editFecha").value;
 
   if (!titulo) {
-    alert("El título es obligatorio");
-    return;
+    toast("El título es obligatorio", "warning"); return;
   }
 
   await fetch(`${API_BASE}/tareas/${id}`, {
@@ -560,6 +645,7 @@ async function guardarEdicion() {
   });
 
   document.getElementById("modalEdicion").classList.add("oculto");
+  toast("Tarea actualizada correctamente", "success");
   await cargarTareas();
 }
 
@@ -1977,7 +2063,7 @@ async function completarItemSim(itemId) {
 }
 
 async function cerrarSprintSim(simulacionId) {
-  if (!confirm("¿Cerrar el Sprint y ver resultados?")) return;
+  if (!await confirmDialog("Se calcularán los puntos entregados y se cerrará el Sprint.", "¿Cerrar Sprint?", "🏁", "Cerrar Sprint", "ok-blue")) return;
   try {
     const res = await fetch(
       `${API_BASE}/api/simulacion/cerrar/${simulacionId}`,

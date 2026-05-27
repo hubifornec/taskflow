@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style_additions.css">
+    <script>
+        /* Auth guard — runs synchronously before anything renders */
+        (function () {
+            try {
+                var u = sessionStorage.getItem("usuario");
+                if (!u || !JSON.parse(u)) { window.location.replace("login.html"); }
+            } catch (e) { window.location.replace("login.html"); }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon"></div>
+                <span class="logo-text">TaskFlow</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <p class="nav-section-label">PRINCIPAL</p>
+                <ul>
+                    <li><a href="#" onclick="mostrarSeccion('inicio')" class="nav-link" id="navInicio">🏠 Inicio</a>
+                    </li>
+                    <li><a href="#" onclick="mostrarSeccion('tablero')" class="nav-link active"
+                            id="navTablero">Tablero</a></li>
+                    <li><a href="#" onclick="mostrarSeccion('simulacion')" class="nav-link" id="navSimulacion">🚀
+                            Simulación</a></li>
+                    <li><a href="#" onclick="mostrarSeccion('progreso')" class="nav-link" id="navProgreso">Mi
+                            progreso</a></li>
+                    <li><a href="#" onclick="mostrarSeccion('reportes')" class="nav-link" id="navReportes">Reportes</a>
+                    </li>
+                    <li><a href="#" onclick="mostrarSeccion('quiz')" class="nav-link" id="navQuiz">Niveles</a></li>
+                </ul>
+
+                <p class="nav-section-label" style="margin-top:24px;">CUENTA</p>
+                <ul>
+                    <li><a href="#" onclick="mostrarSeccion('ajustes')" class="nav-link" id="navAjustes">⚙️ Ajustes</a></li>
+                    <li><a href="#" onclick="mostrarSeccion('ayuda')" class="nav-link" id="navAyuda">❓ Ayuda</a></li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-controls"
+                style="padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <select id="selectorDaltonico" onchange="cambiarModoDaltonico(this.value)"
+                    style="font-size:0.82rem;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--text-primary);flex:1;">
+                    <option value="normal">👁️ Normal</option>
+                    <option value="deuteranopia">🔵 Deuteranopia</option>
+                    <option value="tritanopia">🟣 Tritanopia</option>
+                    <option value="alto-contraste">⬛ Alto contraste</option>
+                </select>
+                <button id="btnTema" onclick="toggleTema()" style="padding:5px 10px;border-radius:6px;">🌙</button>
+            </div>
+
+            <div class="sidebar-user">
+                <div class="user-avatar" id="userAvatar">AG</div>
+                <div class="user-info">
+                    <span class="user-name" id="saludo">Ana García</span>
+                    <span class="user-level">Nivel 2</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MENÚ MÓVIL — top bar -->
+        <div class="mobile-topbar">
+            <div class="mobile-logo">TaskFlow</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button onclick="toggleTema()" class="mobile-icon-btn">🌙</button>
+                <button onclick="cerrarSesion()" class="mobile-icon-btn">🚪</button>
+            </div>
+        </div>
+
+        <!-- MENÚ MÓVIL — bottom nav -->
+        <nav class="mobile-bottom-nav">
+            <a href="#" onclick="mostrarSeccion('inicio')"     class="mob-nav-item" id="mobNavInicio">
+                <span class="mob-nav-icon">🏠</span>
+                <span class="mob-nav-label">Inicio</span>
+            </a>
+            <a href="#" onclick="mostrarSeccion('tablero')"    class="mob-nav-item active" id="mobNavTablero">
+                <span class="mob-nav-icon">📋</span>
+                <span class="mob-nav-label">Tablero</span>
+            </a>
+            <a href="#" onclick="mostrarSeccion('simulacion')" class="mob-nav-item" id="mobNavSimulacion">
+                <span class="mob-nav-icon">🚀</span>
+                <span class="mob-nav-label">Simul.</span>
+            </a>
+            <a href="#" onclick="mostrarSeccion('progreso')"   class="mob-nav-item" id="mobNavProgreso">
+                <span class="mob-nav-icon">📊</span>
+                <span class="mob-nav-label">Progreso</span>
+            </a>
+            <a href="#" onclick="mostrarSeccion('quiz')"       class="mob-nav-item" id="mobNavQuiz">
+                <span class="mob-nav-icon">📘</span>
+                <span class="mob-nav-label">Niveles</span>
+            </a>
+            <a href="#" onclick="mostrarSeccion('reportes')"   class="mob-nav-item" id="mobNavReportes">
+                <span class="mob-nav-icon">📈</span>
+                <span class="mob-nav-label">Reportes</span>
+            </a>
+        </nav>
+
+        <main class="main-content">
+
+            <section id="seccionTablero" class="seccion">
+
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Tablero Scrum</h1>
+                        <p class="page-subtitle" id="sprintInfo">Sprint 1 · 14 días restantes</p>
+                    </div>
+                    <div class="header-actions">
+                        <span class="badge-activas" id="badgeActivas">4 activas</span>
+                        <button id="btnCrear" onclick="abrirFormulario()">+ Nueva tarea</button>
+                        <div class="user-avatar-sm" id="userAvatarSm">AG</div>
+                    </div>
+                </div>
+
+                <!-- Banner drag & drop -->
+                <div id="bannerDrag" class="banner-info oculto">
+                    <span class="banner-dot"></span>
+                    Arrastra las tarjetas entre columnas · El estado se actualiza automáticamente en la base de datos
+                </div>
+
+                <!-- Formulario nueva tarea -->
+                <div id="formulario" class="oculto task-form-card">
+                    <h3>Nueva tarea</h3>
+                    <div class="form-field">
+                        <label>Título</label>
+                        <input id="titulo" placeholder="Título de la tarea">
+                    </div>
+                    <div class="form-field">
+                        <label>Descripción</label>
+                        <textarea id="descripcion" placeholder="Descripción"></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label>Fecha límite</label>
+                        <input id="fechaLimite" type="date">
+                    </div>
+                    <div class="toggle-container">
+                        <span>Prioridad automática</span>
+                        <input id="prioridad" type="checkbox" class="offscreen" checked>
+                        <label for="prioridad" class="switch"></label>
+                    </div>
+                    <input type="number" id="numPrioridad" min="1" max="10" placeholder="Prioridad (1-10)"
+                        style="display:none;">
+                    <div class="botones">
+                        <button onclick="guardarTarea()">Guardar</button>
+                        <button class="btn-cancel" onclick="cerrarFormulario()">Cancelar</button>
+                    </div>
+                </div>
+
+                <div id="tablero" class="tablero-kanban">
+
+                    <div class="columna" id="col-pendiente" data-estado="pendiente" ondragover="allowDrop(event)"
+                        ondrop="drop(event)">
+                        <div class="col-header">
+                            <h3 class="col-titulo">POR HACER</h3>
+                            <span class="col-count" id="count-pendiente">0</span>
+                        </div>
+                        <div class="col-tareas" id="tareas-pendiente"></div>
+                    </div>
+
+                    <div class="columna" id="col-en_proceso" data-estado="en_proceso" ondragover="allowDrop(event)"
+                        ondrop="drop(event)">
+                        <div class="col-header">
+                            <h3 class="col-titulo">EN PROGRESO</h3>
+                            <span class="col-count" id="count-en_proceso">0</span>
+                        </div>
+                        <div class="col-tareas" id="tareas-en_proceso"></div>
+                    </div>
+
+                    <div class="columna" id="col-completada" data-estado="completada" ondragover="allowDrop(event)"
+                        ondrop="drop(event)">
+                        <div class="col-header">
+                            <h3 class="col-titulo">COMPLETADO</h3>
+                            <span class="col-count" id="count-completada">0</span>
+                        </div>
+                        <div class="col-tareas" id="tareas-completada"></div>
+                    </div>
+
+                </div>
+
+                <!-- Sprint progress bar -->
+                <div class="sprint-progress-bar">
+                    <div class="sprint-progress-left">
+                        <span class="sprint-label">Progreso Sprint 1</span>
+                        <div class="barra-fondo">
+                            <div id="barraProgreso" class="barra-relleno" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div class="sprint-stats">
+                        <div class="stat-box">
+                            <span class="stat-num" id="numHechas">0</span>
+                            <span class="stat-lbl">Hechas</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-num" id="numActivas">0</span>
+                            <span class="stat-lbl">Activas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast de estado -->
+                <div id="toastEstado" class="toast oculto">
+                    <span class="toast-dot"></span>
+                    <span id="toastMsg"></span>
+                </div>
+
+            </section>
+
+
+            <section id="seccionInicio" class="seccion">
+
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title" id="bienvenidaTitulo">Bienvenido</h1>
+                        <p class="page-subtitle">Resumen de tu actividad en TaskFlow</p>
+                    </div>
+                </div>
+
+                <!-- KPIs rápidos -->
+                <div class="kpi-row">
+                    <div class="kpi-card">
+                        <span class="kpi-num" id="inicioTotalTareas">—</span>
+                        <span class="kpi-lbl">Total de tareas</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-num" id="inicioCompletadas">—</span>
+                        <span class="kpi-lbl">Completadas</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-num" id="inicioQuizzes">—</span>
+                        <span class="kpi-lbl">Quizzes completados</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-num" id="inicioNivel">—</span>
+                        <span class="kpi-lbl">Nivel actual</span>
+                    </div>
+                </div>
+
+                <div class="progreso-layout">
+                    <div class="progreso-main">
+
+                        <!-- Progreso de tareas -->
+                        <div class="dash-card">
+                            <p class="dash-card-title">Progreso del tablero</p>
+                            <div class="barra-fondo">
+                                <div id="inicioBarra" class="barra-relleno" style="width:0%"></div>
+                            </div>
+                            <p style="font-size:0.82rem;color:#5a8fb5;margin-top:8px;" id="inicioBarraLabel">0%
+                                completado</p>
+                        </div>
+
+                        <!-- Accesos rápidos -->
+                        <div class="dash-card">
+                            <p class="dash-card-title">Accesos rápidos</p>
+                            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                                <button onclick="mostrarSeccion('inicio')">🏠 Inicio</button>
+                                <button onclick="mostrarSeccion('tablero')">📋 Ir al tablero</button>
+                                <button onclick="mostrarSeccion('quiz')">📘 Contenido educativo</button>
+                                <button onclick="mostrarSeccion('progreso')">📊 Ver progreso</button>
+                                <button onclick="mostrarSeccion('reportes')">📈 Ver reportes</button>
+                            </div>
+                        </div>
+
+                        <!-- Últimas tareas -->
+                        <div class="dash-card">
+                            <p class="dash-card-title">Tareas recientes</p>
+                            <div id="inicioTareasRecientes"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="progreso-aside">
+
+                        <!-- Nivel -->
+                        <div class="aside-card">
+                            <span class="aside-label">Tu nivel</span>
+                            <div class="nivel-circulo" id="inicioNivelCirculo">1</div>
+                            <p class="nivel-desc" id="inicioNivelDesc">Básico</p>
+                        </div>
+
+                        <!-- Quizzes -->
+                        <div class="aside-card">
+                            <span class="aside-label">Quizzes</span>
+                            <div class="aside-racha" id="inicioQuizzesAside">0</div>
+                            <p class="aside-racha-sub">de 8 completados</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+            <!-- ======================== CONTENIDO EDUCATIVO (HU05) ======================== -->
+            <section id="seccionQuiz" class="seccion oculto">
+
+                <!-- Vista: tarjeta de teoría -->
+                <div id="vistaTeoria" class="oculto">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Contenido educativo</h1>
+                            <p class="page-subtitle" id="teoriaModuloSubtitulo">Módulo 2 — Ceremonias Scrum</p>
+                        </div>
+                        <div class="header-actions">
+                            <span class="badge-pill" id="badgeTarjeta">Tarjeta 3 / 8</span>
+                            <span class="badge-pill">5 min</span>
+                            <div class="user-avatar-sm">AG</div>
+                        </div>
+                    </div>
+                    <div class="teoria-layout">
+                        <!-- Contenido principal -->
+                        <div class="teoria-main">
+                            <div class="teoria-tags" id="teoriaTags"></div>
+                            <h2 class="teoria-titulo-card" id="teoriaTitulo"></h2>
+                            <p class="teoria-intro" id="teoriaIntro"></p>
+                            <p id="teoriaReferencia" class="teoria-referencia oculto"></p>
+                            <div class="teoria-body" id="teoriaBody"></div>
+                            <div class="teoria-nav">
+                                <button class="btn-nav-anterior" id="btnAnteriorTarjeta" onclick="tarjetaAnterior()">←
+                                    Anterior</button>
+                                <button class="btn-nav-siguiente" id="btnSiguienteTarjeta"
+                                    onclick="tarjetaSiguiente()">Siguiente tarjeta →</button>
+                            </div>
+                        </div>
+                        <!-- Panel lateral -->
+                        <aside class="teoria-aside">
+                            <div class="aside-card">
+                                <p class="aside-label" id="asideModuloLabel">MÓDULO 2</p>
+                                <p class="aside-modulo-nombre" id="asideModuloNombre">Ceremonias Scrum</p>
+                                <div class="aside-pct" id="asidePct">37%</div>
+                                <div class="barra-fondo" style="margin-bottom:14px">
+                                    <div class="barra-relleno" id="asideBarra" style="width:37%"></div>
+                                </div>
+                                <ul class="aside-temas" id="asideTemas"></ul>
+                            </div>
+                            <div class="aside-card">
+                                <p class="aside-label-sm">Racha actual</p>
+                                <div class="aside-racha" id="asideRacha">7 días</div>
+                                <p class="aside-racha-sub">Sigue así</p>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                <!-- Vista: quiz de preguntas (HU06) -->
+                <div id="vistaQuiz" class="oculto">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title" id="quizTitulo">Quiz: Roles de Scrum</h1>
+                            <p class="page-subtitle" id="quizSubtitulo">Pregunta 2 de 5</p>
+                        </div>
+                        <div class="header-actions">
+                            <span class="badge-pill" id="badgeQuizNum">2 / 5</span>
+                            <div class="user-avatar-sm">AG</div>
+                        </div>
+                    </div>
+
+                    <!-- Barra de progreso segmentada -->
+                    <div class="quiz-progress-bar" id="quizProgressBar"></div>
+
+                    <div class="quiz-layout">
+                        <!-- Pregunta -->
+                        <div class="quiz-main">
+                            <div class="quiz-card-pregunta">
+                                <p class="quiz-texto-pregunta" id="preguntaTexto"></p>
+                                <div class="quiz-opciones" id="preguntaContainer"></div>
+                                <div id="feedbackRespuesta" class="oculto feedback-quiz"></div>
+                            </div>
+                            <div class="quiz-nav">
+                                <button class="btn-nav-anterior" id="btnVerExplicacion" onclick="verExplicacion()"
+                                    style="display:none">Ver explicación</button>
+                                <button class="btn-nav-siguiente" id="btnSiguiente" onclick="siguientePregunta()"
+                                    style="display:none">Siguiente pregunta →</button>
+                            </div>
+                            <div id="resultadoFinal" class="oculto resultado-final-card">
+                                <h3>Quiz completado</h3>
+                                <p id="puntuacionFinal"></p>
+                                <button onclick="volverListaQuiz()">Volver a quizzes</button>
+                            </div>
+                        </div>
+                        <!-- Panel lateral resultados parciales -->
+                        <aside class="quiz-aside">
+                            <div class="aside-card">
+                                <p class="aside-label-sm">Resultados parciales</p>
+                                <div class="quiz-stat-big correcto" id="asideCorrectas">
+                                    <span class="qstat-num" id="numCorrectas">0</span>
+                                    <span class="qstat-lbl">Correctas</span>
+                                </div>
+                                <div class="quiz-stat-big incorrecto" id="asideIncorrectas">
+                                    <span class="qstat-num" id="numIncorrectas">0</span>
+                                    <span class="qstat-lbl">Incorrectas</span>
+                                </div>
+                                <p class="aside-restantes" id="asideRestantes">3 preguntas restantes</p>
+                            </div>
+                            <div class="aside-card">
+                                <p class="aside-label-sm">Tiempo promedio</p>
+                                <div class="aside-tiempo" id="asideTiempo">2.4s</div>
+                                <p class="aside-racha-sub">por pregunta</p>
+                            </div>
+                            <div class="aside-card">
+                                <p class="aside-label-sm">Puntos ganados</p>
+                                <div class="aside-puntos" id="asidePuntos">+50 pts</div>
+                                <p class="aside-racha-sub">por respuesta correcta</p>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                <!-- Vista: lista de quizzes (fallback / inicial) -->
+                <div id="listaQuizzesWrap">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Niveles</h1>
+                        </div>
+                    </div>
+                    <div id="listaQuizzes" style="padding:0 28px"></div>
+                </div>
+
+            </section>
+
+            <!-- ======================== SIMULACIÓN DE SPRINT ======================== -->
+            <section id="seccionSimulacion" class="seccion oculto">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Simulación de Sprint</h1>
+                        <p class="page-subtitle">Practica cómo organizar y ejecutar un Sprint real de Scrum</p>
+                    </div>
+                </div>
+                <div style="padding:0 28px;" id="contenidoSimulacion"></div>
+            </section>
+
+            <!-- ======================== PROGRESO (HU07) ======================== -->
+            <!-- ======================== PROGRESO (HU07) ======================== -->
+            <section id="seccionProgreso" class="seccion oculto">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Mi progreso</h1>
+                        <p class="page-subtitle">Actualizado en tiempo real</p>
+                    </div>
+                    <div class="header-actions">
+                        <span class="badge-pill">Sprint 1 activo</span>
+                        <div class="user-avatar-sm">AG</div>
+                    </div>
+                </div>
+                <div class="kpi-row">
+                    <div class="kpi-card"><span class="kpi-num" id="kpiCompletado">0%</span><span
+                            class="kpi-lbl">Completado</span></div>
+                    <div class="kpi-card"><span class="kpi-num" id="kpiQuizzes">0</span><span class="kpi-lbl">Quizzes
+                            completados</span></div>
+                    <div class="kpi-card"><span class="kpi-num" id="kpiTotalTareas">0</span><span class="kpi-lbl">Total
+                            tareas</span></div>
+                    <div class="kpi-card" style="--kpi-accent:#f9a825"><span class="kpi-num" id="progresosPuntos">0
+                            pts</span><span class="kpi-lbl">Puntos ganados</span></div>
+                </div>
+                <div class="progreso-layout">
+                    <div class="progreso-main">
+                        <div class="dash-card">
+                            <h3 class="dash-card-title">Progreso de tareas</h3>
+                            <div class="modulo-progreso-item">
+                                <div class="modulo-progreso-header">
+                                    <span>Tareas completadas vs total</span>
+                                    <span class="modulo-progreso-pct" id="pctTareasLabel">0%</span>
+                                </div>
+                                <div class="barra-fondo">
+                                    <div class="barra-relleno" id="pctTareasBarra" style="width:0%"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top:20px" id="detalleEstados"></div>
+                        </div>
+                        <div class="dash-card">
+                            <p class="dash-card-title">🏆 Logros obtenidos</p>
+                            <div id="logrosLista"></div>
+                        </div>
+                    </div>
+                    <aside class="progreso-aside">
+                        <div class="aside-card">
+                            <p class="aside-label">NIVEL ACTUAL</p>
+                            <div class="nivel-circulo" id="nivelCirculo">1</div>
+                            <p class="nivel-desc" id="nivelDesc">Básico</p>
+                        </div>
+                        <div class="aside-card">
+                            <p class="aside-label">QUIZZES</p>
+                            <div class="aside-racha" id="quizzesAside">0</div>
+                            <p class="aside-racha-sub">completados</p>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- ======================== TABLERO EN VIVO (HU08) ======================== -->
+            <section id="seccionTableroVivo" class="seccion oculto">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Tablero en vivo</h1>
+                        <p class="page-subtitle">Sprint 1 · Sin recargar la página</p>
+                    </div>
+                    <div class="header-actions">
+                        <span class="badge-pill badge-live"><span class="live-dot"></span> En tiempo real</span>
+                        <div class="user-avatar-sm">AG</div>
+                    </div>
+                </div>
+                <div class="banner-info" style="margin:0 28px 16px">
+                    <span class="banner-dot banner-dot-live"></span>
+                    Actualización automática activa · Última sincronización: hace 2 segundos · No es necesario recargar
+                    la página
+                </div>
+                <div class="tablero-kanban tablero-vivo" id="tableroVivo">
+                    <div class="columna" id="vivo-pendiente">
+                        <div class="col-header">
+                            <h3 class="col-titulo">POR HACER</h3><span class="col-count"
+                                id="vivoCountPendiente">0</span>
+                        </div>
+                        <div class="col-tareas" id="vivoTareasPendiente"></div>
+                    </div>
+                    <div class="columna" id="vivo-en_proceso">
+                        <div class="col-header">
+                            <h3 class="col-titulo">EN PROGRESO</h3><span class="col-count"
+                                id="vivoCountProceso">0</span>
+                        </div>
+                        <div class="col-tareas" id="vivoTareasProceso"></div>
+                    </div>
+                    <div class="columna" id="vivo-completada">
+                        <div class="col-header">
+                            <h3 class="col-titulo">COMPLETADO</h3><span class="col-count"
+                                id="vivoCountCompletada">0</span>
+                        </div>
+                        <div class="col-tareas" id="vivoTareasCompletada"></div>
+                    </div>
+                </div>
+                <div class="dash-card" style="margin:16px 28px 0">
+                    <h3 class="dash-card-title">Historial de cambios recientes</h3>
+                    <ul class="historial-lista" id="historialCambios"></ul>
+                </div>
+            </section>
+
+            <!-- ======================== GESTIÓN DE TAREAS (HU09) ======================== -->
+            <section id="seccionGestion" class="seccion oculto">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Gestión de tareas</h1>
+                        <p class="page-subtitle">Sprint 1 · Crear, editar y eliminar</p>
+                    </div>
+                    <div class="header-actions">
+                        <button onclick="abrirFormularioGestion()">+ Nueva tarea</button>
+                        <div class="user-avatar-sm">AG</div>
+                    </div>
+                </div>
+                <div class="gestion-layout">
+                    <div class="gestion-main">
+                        <!-- Formulario nueva/editar tarea -->
+                        <div class="dash-card" id="formGestion">
+                            <h3 class="dash-card-title" id="formGestionTitulo">Nueva tarea</h3>
+                            <div class="form-field">
+                                <label>Título</label>
+                                <input id="gestionTitulo" placeholder="Leer: Sprint Review y cierre de Sprint">
+                            </div>
+                            <div class="gestion-row">
+                                <div class="form-field" style="flex:1">
+                                    <label>Tipo</label>
+                                    <select id="gestionTipo" class="select-field">
+                                        <option>Lectura</option>
+                                        <option>Quiz</option>
+                                        <option>Simulación</option>
+                                    </select>
+                                </div>
+                                <div class="form-field" style="flex:1">
+                                    <label>Columna</label>
+                                    <select id="gestionColumna" class="select-field">
+                                        <option value="pendiente">Por hacer</option>
+                                        <option value="en_proceso">En progreso</option>
+                                        <option value="completada">Completado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="gestion-botones">
+                                <button onclick="guardarTareaGestion()">Guardar tarea</button>
+                                <button class="btn-cancel" onclick="cancelarGestion()">Cancelar</button>
+                            </div>
+                        </div>
+                        <!-- Lista de tareas -->
+                        <div id="listaTareasGestion"></div>
+                    </div>
+                    <!-- Panel lateral stats -->
+                    <aside class="gestion-aside">
+                        <div class="aside-card gestion-stat-card">
+                            <div class="gestion-stat-num" id="gStatTotal">0</div>
+                            <div class="gestion-stat-lbl">Total tareas</div>
+                        </div>
+                        <div class="aside-card gestion-stat-card">
+                            <div class="gestion-stat-num" id="gStatCompletadas">0</div>
+                            <div class="gestion-stat-lbl">Completadas</div>
+                        </div>
+                        <div class="aside-card gestion-stat-card">
+                            <div class="gestion-stat-num" id="gStatProgreso">0</div>
+                            <div class="gestion-stat-lbl">En progreso</div>
+                        </div>
+                        <div class="aside-card gestion-stat-card">
+                            <div class="gestion-stat-num" id="gStatPendientes">0</div>
+                            <div class="gestion-stat-lbl">Pendientes</div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- ======================== REPORTES (HU10) ======================== -->
+            <!-- ======================== REPORTES (HU10) ======================== -->
+            <section id="seccionReportes" class="seccion oculto">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Reportes y estadísticas</h1>
+                        <p class="page-subtitle">Resumen de tareas</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="user-avatar-sm">AG</div>
+                    </div>
+                </div>
+                <!-- KPIs reales -->
+                <div class="kpi-row">
+                    <div class="kpi-card"><span class="kpi-num" id="rptTotal">0</span><span class="kpi-lbl">Total
+                            tareas</span></div>
+                    <div class="kpi-card"><span class="kpi-num" id="rptPendientes">0</span><span
+                            class="kpi-lbl">Pendientes</span></div>
+                    <div class="kpi-card"><span class="kpi-num" id="rptEnProceso">0</span><span class="kpi-lbl">En
+                            proceso</span></div>
+                    <div class="kpi-card"><span class="kpi-num" id="rptTareasHechas">0</span><span
+                            class="kpi-lbl">Completadas</span></div>
+                </div>
+                <div class="reportes-layout">
+                    <div class="reportes-main">
+                        <!-- Gráfica de estados -->
+                        <div class="dash-card">
+                            <h3 class="dash-card-title">Distribución de tareas por estado</h3>
+                            <canvas id="graficaEstados" height="180"></canvas>
+                        </div>
+                    </div>
+                    <aside class="reportes-aside">
+                        <div class="aside-card">
+                            <p class="aside-label">RESUMEN</p>
+                            <table class="resumen-tabla" id="resumenMes">
+                                <tr>
+                                    <td>Total</td>
+                                    <td class="resumen-val" id="resumenTotal">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Pendientes</td>
+                                    <td class="resumen-val" id="resumenPendientes">0</td>
+                                </tr>
+                                <tr>
+                                    <td>En proceso</td>
+                                    <td class="resumen-val" id="resumenEnProceso">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Completadas</td>
+                                    <td class="resumen-val" id="resumenCompletadas">0</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+            <section id="seccionAjustes" class="seccion oculto">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">⚙️ Ajustes</h1>
+                        <p class="page-subtitle">Personaliza tu experiencia en TaskFlow</p>
+                    </div>
+                </div>
+                <div class="ajustes-layout">
+
+                    <!-- Apariencia -->
+                    <div class="dash-card ajustes-card">
+                        <h3 class="dash-card-title">🎨 Apariencia</h3>
+
+                        <div class="ajuste-item">
+                            <div class="ajuste-info">
+                                <span class="ajuste-label">Tema de color</span>
+                                <span class="ajuste-desc">Cambia entre modo claro y oscuro</span>
+                            </div>
+                            <button class="ajuste-toggle" id="ajusteBtnTema" onclick="toggleTema(); actualizarBotonesAjustes()">🌙 Modo oscuro</button>
+                        </div>
+
+                        <div class="ajuste-item">
+                            <div class="ajuste-info">
+                                <span class="ajuste-label">Modo de accesibilidad visual</span>
+                                <span class="ajuste-desc">Adapta los colores para distintos tipos de visión</span>
+                            </div>
+                            <select class="ajuste-select" id="ajusteSelectorDaltonico"
+                                onchange="cambiarModoDaltonico(this.value); document.getElementById('selectorDaltonico').value=this.value;">
+                                <option value="normal">👁️ Normal</option>
+                                <option value="deuteranopia">🔵 Deuteranopia (rojo-verde)</option>
+                                <option value="tritanopia">🟣 Tritanopia (azul-amarillo)</option>
+                                <option value="alto-contraste">⬛ Alto contraste</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Cuenta -->
+                    <div class="dash-card ajustes-card">
+                        <h3 class="dash-card-title">👤 Cuenta</h3>
+
+                        <div class="ajuste-item">
+                            <div class="ajuste-info">
+                                <span class="ajuste-label">Nombre</span>
+                                <span class="ajuste-desc" id="ajusteNombreActual">—</span>
+                            </div>
+                        </div>
+                        <div class="ajuste-item">
+                            <div class="ajuste-info">
+                                <span class="ajuste-label">Correo electrónico</span>
+                                <span class="ajuste-desc" id="ajusteEmailActual">—</span>
+                            </div>
+                        </div>
+                        <div class="ajuste-item" style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+                            <div class="ajuste-info">
+                                <span class="ajuste-label" style="color:#e53935;">Cerrar sesión</span>
+                                <span class="ajuste-desc">Salir de tu cuenta en este dispositivo</span>
+                            </div>
+                            <button class="ajuste-btn-danger" onclick="cerrarSesion()">Salir</button>
+                        </div>
+                    </div>
+
+                    <!-- Notificaciones -->
+                    <div class="dash-card ajustes-card">
+                        <h3 class="dash-card-title">🔔 Notificaciones</h3>
+                        <div class="ajuste-item">
+                            <div class="ajuste-info">
+                                <span class="ajuste-label">Notificaciones de logros</span>
+                                <span class="ajuste-desc">Mostrar aviso al desbloquear un logro</span>
+                            </div>
+                            <label class="ajuste-switch">
+                                <input type="checkbox" id="switchNotifLogros" checked
+                                    onchange="guardarPreferencia('notifLogros', this.checked)">
+                                <span class="ajuste-slider"></span>
+                            </label>
+                        </div>
+                        <div class="ajuste-item">
+                            <div class="ajuste-info">
+                                <span class="ajuste-label">Notificaciones de tareas</span>
+                                <span class="ajuste-desc">Mostrar aviso al crear o completar tareas</span>
+                            </div>
+                            <label class="ajuste-switch">
+                                <input type="checkbox" id="switchNotifTareas" checked
+                                    onchange="guardarPreferencia('notifTareas', this.checked)">
+                                <span class="ajuste-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ==================== AYUDA ==================== -->
+            <section id="seccionAyuda" class="seccion oculto">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">❓ Ayuda</h1>
+                        <p class="page-subtitle">Guía de uso y preguntas frecuentes</p>
+                    </div>
+                </div>
+                <div class="ayuda-layout">
+
+                    <!-- Guía rápida -->
+                    <div class="dash-card ayuda-card">
+                        <h3 class="dash-card-title">🚀 Guía rápida</h3>
+                        <div class="ayuda-pasos">
+                            <div class="ayuda-paso">
+                                <div class="ayuda-paso-num">1</div>
+                                <div>
+                                    <strong>Crea tus tareas</strong>
+                                    <p>En el <strong>Tablero</strong>, usa el botón "+ Nueva tarea" para agregar tareas con título, descripción, fecha límite y prioridad.</p>
+                                </div>
+                            </div>
+                            <div class="ayuda-paso">
+                                <div class="ayuda-paso-num">2</div>
+                                <div>
+                                    <strong>Organiza con Kanban</strong>
+                                    <p>Arrastra las tarjetas entre las columnas <em>Pendiente</em>, <em>En proceso</em> y <em>Completada</em>. El cambio se guarda automáticamente.</p>
+                                </div>
+                            </div>
+                            <div class="ayuda-paso">
+                                <div class="ayuda-paso-num">3</div>
+                                <div>
+                                    <strong>Aprende con los Niveles</strong>
+                                    <p>En la sección <strong>Niveles</strong> encontrarás módulos teóricos y quizzes sobre metodologías ágiles. Completa los 8 quizzes para alcanzar el nivel Avanzado.</p>
+                                </div>
+                            </div>
+                            <div class="ayuda-paso">
+                                <div class="ayuda-paso-num">4</div>
+                                <div>
+                                    <strong>Practica con la Simulación</strong>
+                                    <p>En <strong>Simulación</strong> puedes practicar un Sprint real: selecciona tareas de la lista de pendientes, ejecuta el Sprint y obtén retroalimentación.</p>
+                                </div>
+                            </div>
+                            <div class="ayuda-paso">
+                                <div class="ayuda-paso-num">5</div>
+                                <div>
+                                    <strong>Revisa tu progreso</strong>
+                                    <p>En <strong>Mi progreso</strong> puedes ver tus estadísticas, puntos acumulados y logros desbloqueados.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div class="dash-card ayuda-card">
+                        <h3 class="dash-card-title">💬 Preguntas frecuentes</h3>
+                        <div class="faq-lista">
+
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <div class="faq-pregunta">¿Cómo cambio el estado de una tarea? <span class="faq-arrow">▾</span></div>
+                                <div class="faq-respuesta">Puedes arrastrar la tarjeta a otra columna en el Tablero, o hacer clic en el menú de la tarea y seleccionar el nuevo estado.</div>
+                            </div>
+
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <div class="faq-pregunta">¿Qué son los puntos de experiencia? <span class="faq-arrow">▾</span></div>
+                                <div class="faq-respuesta">Ganas puntos completando tareas (+20 pts), creando tareas (+10 pts) y completando quizzes (+50 pts). Acumula puntos para subir de nivel.</div>
+                            </div>
+
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <div class="faq-pregunta">¿Cómo llego al nivel Avanzado? <span class="faq-arrow">▾</span></div>
+                                <div class="faq-respuesta">Completa los 8 quizzes disponibles (4 de nivel Básico y 4 de nivel Avanzado) para desbloquear el nivel Avanzado automáticamente.</div>
+                            </div>
+
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <div class="faq-pregunta">¿La simulación afecta mis tareas reales? <span class="faq-arrow">▾</span></div>
+                                <div class="faq-respuesta">No. La simulación es un entorno de práctica separado. Las tareas que creas en el Tablero y las de la Simulación son independientes.</div>
+                            </div>
+
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <div class="faq-pregunta">¿Puedo usar la app sin conexión? <span class="faq-arrow">▾</span></div>
+                                <div class="faq-respuesta">No, TaskFlow requiere conexión a internet para sincronizar tus tareas y progreso con el servidor.</div>
+                            </div>
+
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <div class="faq-pregunta">¿Cómo activo el modo oscuro? <span class="faq-arrow">▾</span></div>
+                                <div class="faq-respuesta">Ve a <strong>Ajustes → Apariencia</strong> y presiona el botón de tema, o usa el ícono 🌙 en la barra superior (móvil) o en el panel lateral (escritorio).</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Versión -->
+                    <div class="dash-card ayuda-card" style="text-align:center;padding:24px;">
+                        <p style="font-size:2rem;margin-bottom:8px;">📋</p>
+                        <p style="font-weight:600;color:var(--text-primary);font-size:1rem;">TaskFlow</p>
+                        <p style="color:var(--text-muted);font-size:0.82rem;margin-top:4px;">Versión 1.0 · Sprint 2</p>
+                        <p style="color:var(--text-muted);font-size:0.78rem;margin-top:8px;">Gestión ágil de tareas con gamificación</p>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL EDICIÓN -->
+    <div id="modalEdicion" class="oculto modal-overlay">
+        <div class="modal-contenido">
+            <h3>Editar tarea</h3>
+            <input type="hidden" id="editId">
+            <div class="form-field">
+                <label>Título</label>
+                <input id="editTitulo" placeholder="Título">
+            </div>
+            <div class="form-field">
+                <label>Descripción</label>
+                <textarea id="editDescripcion" placeholder="Descripción"></textarea>
+            </div>
+            <div class="form-field">
+                <label>Fecha límite</label>
+                <input id="editFecha" type="date">
+            </div>
+            <div class="form-field">
+                <label>Prioridad (1-10)</label>
+                <input id="editPrioridad" type="number" min="1" max="10" placeholder="1-10">
+            </div>
+            <div style="display:flex;gap:10px;margin-top:8px;">
+                <button onclick="guardarEdicion()">Guardar cambios</button>
+                <button class="btn-cancel" onclick="cerrarEdicion()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+    <!-- UserWay Accessibility Widget — reemplaza YOUR_ACCOUNT_KEY con tu key de userway.org -->
+    <script src="https://cdn.userway.org/widget.js" data-account="YOUR_ACCOUNT_KEY"></script>
+</body>
+</html>

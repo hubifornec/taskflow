@@ -1,0 +1,50 @@
+sequenceDiagram
+    title HU08 - Visualización de tareas con actualización periódica
+    actor U as Usuario
+    participant IH as index.html
+    participant T as Browser Timer
+    participant SJ as script.js
+    participant TC as TareaController
+    participant TS as TareaService
+    participant TR as TareaRepository
+    participant DB as Base de datos
+
+    Note over IH,T: Al cargar index.html se inicia<br/>setInterval cada 10 segundos (polling)
+    IH->>T: setInterval(callback, 10000)
+
+    loop Cada 10 segundos (polling)
+        T->>SJ: callback ejecutado
+        SJ->>SJ: cargarTareas()
+        SJ->>TC: GET /tareas?usuarioId={id}
+        TC->>TS: obtenerPorUsuario(usuarioId)
+        TS->>TR: findByUsuarioId(usuarioId)
+        TR->>DB: SELECT * FROM tareas WHERE usuario_id=?
+
+        alt Conexión OK
+            DB-->>TR: tareas actualizadas
+            TR-->>TS: List Tarea
+            TS-->>TC: List Tarea
+            TC-->>SJ: 200 OK con tareas
+
+            alt Estaba sin conexión antes
+                SJ->>SJ: conexionActiva = true
+                SJ->>IH: Quita indicador de "Sin conexión"
+            end
+
+            SJ->>SJ: Re-renderiza columnas con datos frescos
+            SJ-->>U: Tablero refrescado automáticamente
+        else Error de red / servidor caído
+            DB-->>TR: timeout o exception
+            TR-->>TS: error
+            TS-->>TC: error
+            TC-->>SJ: throw fetch error
+
+            alt Primera vez detectando desconexión
+                SJ->>SJ: conexionActiva = false
+                SJ->>IH: Agrega indicador rojo<br/>"Sin conexión, reintentando..."
+                IH-->>U: Muestra warning
+            end
+        end
+    end
+
+    Note over U,DB: Cualquier cambio (crear, editar, eliminar,<br/>drag & drop, cambios de otro usuario en BD)<br/>se refleja en máximo 10 segundos<br/>sin que el usuario recargue la página

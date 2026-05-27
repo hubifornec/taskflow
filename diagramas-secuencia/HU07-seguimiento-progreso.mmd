@@ -1,0 +1,68 @@
+sequenceDiagram
+    title HU07 - Seguimiento de progreso
+    actor U as Usuario
+    participant IH as index.html
+    participant SJ as script.js
+    participant SS as sessionStorage
+    participant TC as TareaController
+    participant TS as TareaService
+    participant TR as TareaRepository
+    participant QC as QuizController
+    participant UR as UsuarioRepository
+    participant DB as Base de datos
+
+    U->>IH: Click en sección "Progreso"
+    IH->>SJ: mostrarSeccion("progreso")
+    SJ->>SJ: cargarProgreso()
+    SJ->>SS: getItem("usuario")
+    SS-->>SJ: Usuario base
+
+    par Llamadas en paralelo (Promise.all)
+        SJ->>TC: GET /api/user/stats?usuarioId={id}
+        TC->>TS: obtenerStats(usuarioId)
+
+        TS->>TR: countByUsuarioId(usuarioId)
+        TR->>DB: SELECT COUNT(*) FROM tareas
+        DB-->>TR: total
+        TR-->>TS: long total
+
+        TS->>TR: findByUsuarioIdAndEstado("pendiente")
+        TR->>DB: SELECT WHERE estado="pendiente"
+        DB-->>TR: lista
+        TR-->>TS: pendientes.size()
+
+        TS->>TR: findByUsuarioIdAndEstado("en_proceso")
+        TR->>DB: SELECT WHERE estado="en_proceso"
+        DB-->>TR: lista
+        TR-->>TS: enProceso.size()
+
+        TS->>TR: findByUsuarioIdAndEstado("completada")
+        TR->>DB: SELECT WHERE estado="completada"
+        DB-->>TR: lista
+        TR-->>TS: completadas.size()
+
+        TS-->>TC: Map {total, pendientes, enProceso, completadas}
+        TC-->>SJ: 200 OK con stats
+    and
+        SJ->>QC: GET /api/user/progress?usuarioId={id}
+        QC->>UR: findById(usuarioId)
+        UR->>DB: SELECT * FROM usuarios WHERE id=?
+        DB-->>UR: Usuario
+        UR-->>QC: Optional con Usuario
+
+        alt Usuario no existe
+            QC-->>SJ: 500 {error: "Usuario no encontrado"}
+        else Usuario válido
+            QC-->>SJ: 200 OK Map {nivel, quizzesCompletados, totalQuizzes:8}
+        end
+    end
+
+    SJ->>SJ: porcentajeTareas = completadas/total * 100
+    SJ->>SJ: porcentajeQuizzes = quizzesCompletados/totalQuizzes * 100
+
+    Note right of SJ: Sincroniza sessionStorage<br/>con datos frescos del servidor
+    SJ->>SS: setItem("usuario", {...usuario, nivel, quizzesCompletados})
+
+    SJ-->>IH: Renderiza barra de progreso (porcentajeQuizzes)
+    SJ-->>IH: Renderiza resumen (nivel, quizzes X/8, totales tareas, %)
+    IH-->>U: Muestra dashboard de progreso actualizado

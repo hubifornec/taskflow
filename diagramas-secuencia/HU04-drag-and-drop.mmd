@@ -1,0 +1,48 @@
+sequenceDiagram
+    title HU04 - Movimiento de tareas (Drag & Drop)
+    actor U as Usuario
+    participant IH as index.html
+    participant SJ as script.js
+    participant TC as TareaController
+    participant TS as TareaService
+    participant TR as TareaRepository
+    participant DB as Base de datos
+
+    U->>IH: Inicia drag de una tarjeta
+    IH->>SJ: dragstart event
+    SJ->>SJ: tareaArrastrada = tarea.id
+    SJ->>IH: añade clase "arrastrando"
+
+    U->>IH: Suelta sobre otra columna
+    IH->>SJ: drop event
+    SJ->>SJ: nuevoEstado = columna.data-estado
+
+    alt Sin tarea arrastrada
+        SJ-->>IH: return (ignora)
+    else Tarea válida
+        SJ->>TC: PATCH /tareas/{id}/status {estado: nuevoEstado}
+        TC->>TS: actualizarEstado(id, nuevoEstado)
+        TS->>TR: findById(id)
+        TR->>DB: SELECT * FROM tareas WHERE id=?
+
+        alt Tarea no existe
+            DB-->>TR: vacío
+            TR-->>TS: Optional.empty()
+            TS-->>TC: throw RuntimeException
+            TC-->>SJ: 500 {error}
+        else Tarea encontrada
+            DB-->>TR: Tarea
+            TR-->>TS: Tarea
+            TS->>TS: tarea.setEstado(nuevoEstado)
+            TS->>TR: save(tarea)
+            TR->>DB: UPDATE tareas SET estado=? WHERE id=?
+            DB-->>TR: OK
+            TR-->>TS: Tarea actualizada
+            TS-->>TC: Tarea
+            TC-->>SJ: 200 OK
+        end
+
+        SJ->>SJ: cargarTareas()
+        Note right of SJ: Re-renderiza el tablero (ver HU03)
+        SJ-->>U: Tarjeta aparece en nueva columna
+    end

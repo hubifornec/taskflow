@@ -1,0 +1,170 @@
+classDiagram
+    %% ====== MODELOS (Entidades JPA) ======
+    class Usuario {
+        -Long id
+        -String nombre
+        -String email
+        -String password
+        -String nivel
+        -Integer quizzesCompletados
+        -LocalDateTime createdAt
+    }
+
+    class Tarea {
+        -Long id
+        -String titulo
+        -String descripcion
+        -Integer columnaId
+        -Integer prioridad
+        -LocalDate fechaVencimiento
+        -String estado
+        -Long usuarioId
+        -LocalDateTime createdAt
+    }
+
+    class Cuestionario {
+        -Long id
+        -String titulo
+        -String descripcion
+        -Integer duracionMinutos
+        -String tipo
+        -String nivel
+        -LocalDateTime createdAt
+        -List~Pregunta~ preguntas
+    }
+
+    class Pregunta {
+        -Long id
+        -String texto
+        -String opciones
+        -String respuestaCorrecta
+        -String tipoPregunta
+        -Integer puntaje
+        -Cuestionario cuestionario
+    }
+
+    class Teoria {
+        -Long id
+        -Long cuestionarioId
+        -String titulo
+        -String contenido
+        -Integer orden
+    }
+
+    %% ====== REPOSITORIOS ======
+    class UsuarioRepository {
+        <<interface>>
+        +findByEmailAndPassword(email: String, password: String) Optional~Usuario~
+    }
+
+    class TareaRepository {
+        <<interface>>
+        +findByEstado(estado: String) List~Tarea~
+        +findByUsuarioId(usuarioId: Long) List~Tarea~
+        +findByUsuarioIdAndEstado(usuarioId: Long, estado: String) List~Tarea~
+        +countByUsuarioId(usuarioId: Long) long
+    }
+
+    class CuestionarioRepository {
+        <<interface>>
+        +findByNivel(nivel: String) List~Cuestionario~
+        +findByNivelAndTipo(nivel: String, tipo: String) List~Cuestionario~
+    }
+
+    class PreguntaRepository {
+        <<interface>>
+        +findByCuestionarioId(cuestionarioId: Long) List~Pregunta~
+    }
+
+    class TeoriaRepository {
+        <<interface>>
+        +findByCuestionarioIdOrderByOrden(cuestionarioId: Long) List~Teoria~
+    }
+
+    %% ====== SERVICIOS ======
+    class AuthService {
+        -UsuarioRepository usuarioRepository
+        +registrar(usuario: Usuario) Usuario
+        +login(email: String, password: String) Usuario
+        +subirNivel(id: Long) Usuario
+        +completarQuiz(id: Long) Usuario
+        -validarPassword(password: String) boolean
+    }
+
+    class TareaService {
+        -TareaRepository tareaRepository
+        +obtenerPorUsuario(usuarioId: Long) List~Tarea~
+        +crear(tarea: Tarea) Tarea
+        +actualizarEstado(id: Long, nuevoEstado: String) Tarea
+        +obtenerStats(usuarioId: Long) Map
+    }
+
+    class QuizService {
+        -CuestionarioRepository cuestionarioRepository
+        -PreguntaRepository preguntaRepository
+        -TeoriaRepository teoriaRepository
+        +obtenerTodos() List~Cuestionario~
+        +obtenerPorNivel(nivel: String) List~Cuestionario~
+        +obtenerQuizzesPorNivel(nivel: String) List~Cuestionario~
+        +obtenerTeoriasPorNivel(nivel: String) List~Cuestionario~
+        +obtenerPreguntasPorCuestionario(id: Long) List~Pregunta~
+        +obtenerTeoriaPorCuestionario(id: Long) List~Teoria~
+        +validarRespuesta(preguntaId: Long, respuesta: String) Map
+    }
+
+    %% ====== CONTROLADORES ======
+    class AuthController {
+        -AuthService authService
+        +registrar(usuario: Usuario) ResponseEntity
+        +login(body: Map) ResponseEntity
+        +completarQuiz(id: Long) ResponseEntity
+    }
+
+    class TareaController {
+        -TareaService tareaService
+        +obtenerTareas(usuarioId: Long) ResponseEntity
+        +crearTarea(tarea: Tarea) ResponseEntity
+        +actualizarEstado(id: Long, body: Map) ResponseEntity
+        +obtenerStats(usuarioId: Long) ResponseEntity
+    }
+
+    class QuizController {
+        -QuizService quizService
+        +obtenerQuizzes() ResponseEntity
+        +obtenerPorNivel(nivel: String) ResponseEntity
+        +obtenerPreguntas(cuestionarioId: Long) ResponseEntity
+        +obtenerTeoria(cuestionarioId: Long) ResponseEntity
+        +validarRespuesta(body: Map) ResponseEntity
+        +obtenerProgreso() ResponseEntity
+    }
+
+    class HomeController {
+        +home() String
+    }
+
+    %% ====== RELACIONES ======
+    %% Composición: Cuestionario contiene Preguntas
+    Cuestionario "1" *-- "0..*" Pregunta : contiene
+
+    %% Asociaciones por FK (sin relación JPA explícita pero sí en BD)
+    Tarea "0..*" --> "1" Usuario : pertenece (usuarioId)
+    Teoria "0..*" --> "1" Cuestionario : pertenece (cuestionarioId)
+
+    %% Repositorios manejan entidades
+    UsuarioRepository ..> Usuario
+    TareaRepository ..> Tarea
+    CuestionarioRepository ..> Cuestionario
+    PreguntaRepository ..> Pregunta
+    TeoriaRepository ..> Teoria
+
+    %% Servicios usan repositorios
+    AuthService --> UsuarioRepository
+    TareaService --> TareaRepository
+    QuizService --> CuestionarioRepository
+    QuizService --> PreguntaRepository
+    QuizService --> TeoriaRepository
+
+    %% Controladores usan servicios
+    AuthController --> AuthService
+    TareaController --> TareaService
+    QuizController --> QuizService

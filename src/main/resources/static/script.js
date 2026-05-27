@@ -1435,12 +1435,18 @@ async function confirmarRespuesta(preguntaId) {
   const feedbackEl = document.getElementById("feedbackRespuesta");
   feedbackEl.classList.remove("oculto");
 
+  const explicacion = resultado.explicacion || resultado.respuestaCorrecta || "";
+
   if (resultado.correcto) {
     numCorrectas++;
     puntajeAcumulado += resultado.puntaje || 50;
     opcionSeleccionada.classList.add("opcion-correcta");
     opcionSeleccionada.innerHTML += `<span class="opcion-icono-check">✓</span>`;
-    feedbackEl.innerHTML = `<strong>Correcto</strong><p>${resultado.explicacion || ""}</p>`;
+    feedbackEl.innerHTML = `
+      <div class="feedback-header correcto">✅ <strong>¡Correcto!</strong></div>
+      <div class="feedback-explicacion oculto" id="explicacionTexto">
+        <p>${explicacion}</p>
+      </div>`;
   } else {
     numIncorrectas++;
     opcionSeleccionada.classList.add("opcion-incorrecta");
@@ -1449,7 +1455,12 @@ async function confirmarRespuesta(preguntaId) {
       if (b.getAttribute("data-valor") === resultado.respuestaCorrecta)
         b.classList.add("opcion-correcta");
     });
-    feedbackEl.innerHTML = `<strong>Incorrecto</strong><p>La respuesta correcta es: <strong>${resultado.respuestaCorrecta}</strong>. ${resultado.explicacion || ""}</p>`;
+    feedbackEl.innerHTML = `
+      <div class="feedback-header incorrecto">❌ <strong>Incorrecto</strong></div>
+      <div class="feedback-respuesta-correcta">Respuesta correcta: <strong>${resultado.respuestaCorrecta}</strong></div>
+      <div class="feedback-explicacion oculto" id="explicacionTexto">
+        <p>${explicacion}</p>
+      </div>`;
   }
 
   document.getElementById("btnVerExplicacion").style.display = "block";
@@ -1466,9 +1477,12 @@ async function confirmarRespuesta(preguntaId) {
 }
 
 function verExplicacion() {
-  document
-    .getElementById("feedbackRespuesta")
-    .scrollIntoView({ behavior: "smooth" });
+  const exp = document.getElementById("explicacionTexto");
+  const btn = document.getElementById("btnVerExplicacion");
+  if (!exp) return;
+  const oculto = exp.classList.toggle("oculto");
+  btn.textContent = oculto ? "📖 Ver explicación" : "📖 Ocultar explicación";
+  if (!oculto) exp.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function siguientePregunta() {

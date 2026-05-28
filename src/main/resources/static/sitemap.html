@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa del sitio — TaskFlow</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: linear-gradient(135deg, #6c63ff 0%, #5a52d5 100%);
+      color: #fff;
+      padding: 40px 24px 48px;
+      text-align: center;
+    }
+    .site-header .logo {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .site-header .logo span { opacity: 0.75; font-weight: 400; }
+    .site-header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      max-width: 520px;
+      margin: 0 auto 20px;
+    }
+    .btn-app {
+      display: inline-block;
+      background: #fff;
+      color: #6c63ff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 11px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    .btn-app:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+      max-width: 960px;
+      margin: 24px auto 0;
+      padding: 0 24px;
+      font-size: 0.82rem;
+      color: #6b7280;
+    }
+    .breadcrumb a { color: #6c63ff; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── Main ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    /* ── Section blocks ── */
+    .sitemap-section {
+      margin-bottom: 36px;
+    }
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* ── Cards grid ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .site-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #e5e7eb;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    .site-card:hover {
+      border-color: #6c63ff;
+      box-shadow: 0 4px 16px rgba(108,99,255,0.12);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .card-body { flex: 1; min-width: 0; }
+    .card-title {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    .card-desc {
+      font-size: 0.8rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+    .card-url {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      margin-top: 8px;
+      font-family: 'Courier New', monospace;
+    }
+    .card-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-top: 6px;
+    }
+    .badge-auth   { background: #fef3c7; color: #92400e; }
+    .badge-public { background: #d1fae5; color: #065f46; }
+    .badge-api    { background: #dbeafe; color: #1e40af; }
+
+    /* ── Icon colors ── */
+    .ico-tablero   { background: #ede9fe; }
+    .ico-quiz      { background: #fce7f3; }
+    .ico-sim       { background: #d1fae5; }
+    .ico-progreso  { background: #dbeafe; }
+    .ico-reportes  { background: #fef3c7; }
+    .ico-ajustes   { background: #f3f4f6; }
+    .ico-ayuda     { background: #e0f2fe; }
+    .ico-login     { background: #f0fdf4; }
+    .ico-api       { background: #ede9fe; }
+    .ico-scorm     { background: #fdf4ff; }
+
+    /* ── API table ── */
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      font-size: 0.83rem;
+    }
+    .api-table th {
+      background: #f9fafb;
+      padding: 10px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .api-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      color: #4b5563;
+      vertical-align: top;
+    }
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr:hover td { background: #fafafa; }
+    .method {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-family: monospace;
+      min-width: 42px;
+      text-align: center;
+    }
+    .method-get    { background: #d1fae5; color: #065f46; }
+    .method-post   { background: #dbeafe; color: #1e40af; }
+    .method-put    { background: #fef3c7; color: #92400e; }
+    .method-delete { background: #fee2e2; color: #991b1b; }
+    .method-patch  { background: #fdf4ff; color: #6b21a8; }
+    .endpoint-path { font-family: monospace; color: #6c63ff; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 28px 16px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+    }
+    footer a { color: #6c63ff; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      .api-table { font-size: 0.75rem; }
+      .api-table td, .api-table th { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header class="site-header">
+  <div class="logo">🧩 TaskFlow <span>/ Mapa del sitio</span></div>
+  <p>Plataforma de aprendizaje Scrum con gamificación, quizzes interactivos y simulación de sprints.</p>
+  <a href="/login.html" class="btn-app">→ Ir a la aplicación</a>
+</header>
+
+<div class="breadcrumb">
+  <a href="/login.html">Inicio</a> › Mapa del sitio
+</div>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<main>
+
+  <!-- Páginas públicas -->
+  <div class="sitemap-section">
+    <div class="section-title">Páginas públicas</div>
+    <div class="cards-grid">
+
+      <a href="/login.html" class="site-card">
+        <div class="card-icon ico-login">🔐</div>
+        <div class="card-body">
+          <div class="card-title">Inicio de sesión</div>
+          <div class="card-desc">Acceso a la plataforma con email y contraseña. Incluye opción de registro para nuevos usuarios.</div>
+          <div class="card-url">/login.html</div>
+          <span class="card-badge badge-public">Público</span>
+        </div>
+      </a>
+
+      <a href="/sitemap.html" class="site-card">
+        <div class="card-icon ico-ayuda">🗺️</div>
+        <div class="card-body">
+          <div class="card-title">Mapa del sitio</div>
+          <div class="card-desc">Estructura completa de la plataforma. Todas las secciones, rutas y endpoints disponibles.</div>
+          <div class="card-url">/sitemap.html</div>
+          <span class="card-badge badge-public">Público</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Secciones de la app -->
+  <div class="sitemap-section">
+    <div class="section-title">Secciones principales (requieren sesión iniciada)</div>
+    <div class="cards-grid">
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-tablero">📋</div>
+        <div class="card-body">
+          <div class="card-title">Tablero Scrum</div>
+          <div class="card-desc">Gestión de tareas con tablero Kanban. Crear, editar, mover y eliminar tareas del sprint.</div>
+          <div class="card-url">/index.html → Tablero</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-quiz">🎓</div>
+        <div class="card-body">
+          <div class="card-title">Quizzes</div>
+          <div class="card-desc">Cuestionarios de Scrum por niveles (básico y avanzado). Teoría, práctica y examen final por módulo.</div>
+          <div class="card-url">/index.html → Quiz</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-sim">🚀</div>
+        <div class="card-body">
+          <div class="card-title">Simulación de Sprint</div>
+          <div class="card-desc">Simulador interactivo de un sprint real de Scrum. Define la meta, selecciona tareas y cierra el sprint.</div>
+          <div class="card-url">/index.html → Simulación</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-progreso">📈</div>
+        <div class="card-body">
+          <div class="card-title">Mi Progreso</div>
+          <div class="card-desc">Seguimiento del aprendizaje: nivel actual, puntos acumulados, quizzes completados y logros desbloqueados.</div>
+          <div class="card-url">/index.html → Progreso</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-reportes">📊</div>
+        <div class="card-body">
+          <div class="card-title">Reportes</div>
+          <div class="card-desc">Gráficas de progreso, estadísticas de tareas completadas y métricas de rendimiento del sprint.</div>
+          <div class="card-url">/index.html → Reportes</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-ajustes">⚙️</div>
+        <div class="card-body">
+          <div class="card-title">Ajustes</div>
+          <div class="card-desc">Preferencias de apariencia, modos de accesibilidad visual, notificaciones y exportación SCORM.</div>
+          <div class="card-url">/index.html → Ajustes</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-ayuda">❓</div>
+        <div class="card-body">
+          <div class="card-title">Ayuda</div>
+          <div class="card-desc">Preguntas frecuentes, guía de uso de la plataforma y contacto de soporte técnico.</div>
+          <div class="card-url">/index.html → Ayuda</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+      <a href="/index.html" class="site-card">
+        <div class="card-icon ico-scorm">📦</div>
+        <div class="card-body">
+          <div class="card-title">Exportación SCORM</div>
+          <div class="card-desc">Descarga la aplicación completa empaquetada bajo el estándar SCORM 1.2 para importar en cualquier LMS.</div>
+          <div class="card-url">/api/scorm/app</div>
+          <span class="card-badge badge-auth">Requiere sesión</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- API REST -->
+  <div class="sitemap-section">
+    <div class="section-title">API REST — Endpoints del backend</div>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Método</th>
+          <th>Endpoint</th>
+          <th>Descripción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Auth -->
+        <tr><td colspan="3" style="background:#f9fafb;font-weight:600;color:#6c63ff;font-size:0.78rem;padding:8px 16px;">🔐 Autenticación</td></tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td class="endpoint-path">/api/auth/register</td>
+          <td>Registro de nuevo usuario</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td class="endpoint-path">/api/auth/login</td>
+          <td>Inicio de sesión</td>
+        </tr>
+
+        <!-- Usuarios -->
+        <tr><td colspan="3" style="background:#f9fafb;font-weight:600;color:#6c63ff;font-size:0.78rem;padding:8px 16px;">👤 Usuarios</td></tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/usuarios/{id}</td>
+          <td>Obtener datos de un usuario</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td class="endpoint-path">/usuarios/{id}/completar-quiz</td>
+          <td>Registrar quiz completado y actualizar nivel</td>
+        </tr>
+
+        <!-- Tareas -->
+        <tr><td colspan="3" style="background:#f9fafb;font-weight:600;color:#6c63ff;font-size:0.78rem;padding:8px 16px;">📋 Tareas</td></tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/tareas?usuarioId={id}</td>
+          <td>Listar tareas de un usuario</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td class="endpoint-path">/tareas</td>
+          <td>Crear nueva tarea</td>
+        </tr>
+        <tr>
+          <td><span class="method method-put">PUT</span></td>
+          <td class="endpoint-path">/tareas/{id}</td>
+          <td>Actualizar tarea existente</td>
+        </tr>
+        <tr>
+          <td><span class="method method-delete">DELETE</span></td>
+          <td class="endpoint-path">/tareas/{id}</td>
+          <td>Eliminar tarea</td>
+        </tr>
+
+        <!-- Quiz -->
+        <tr><td colspan="3" style="background:#f9fafb;font-weight:600;color:#6c63ff;font-size:0.78rem;padding:8px 16px;">🎓 Quizzes</td></tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/api/quiz</td>
+          <td>Listar todos los cuestionarios</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/api/quiz/nivel/{nivel}</td>
+          <td>Cuestionarios filtrados por nivel</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/api/quiz/{id}</td>
+          <td>Preguntas de un cuestionario</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td class="endpoint-path">/api/quiz/validar/{preguntaId}</td>
+          <td>Validar respuesta y obtener explicación</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/api/teoria/{cuestionarioId}</td>
+          <td>Contenido teórico de un módulo</td>
+        </tr>
+
+        <!-- Simulación -->
+        <tr><td colspan="3" style="background:#f9fafb;font-weight:600;color:#6c63ff;font-size:0.78rem;padding:8px 16px;">🚀 Simulación de Sprint</td></tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td class="endpoint-path">/api/simulacion/iniciar</td>
+          <td>Iniciar nueva simulación de sprint</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/api/simulacion/activa/{usuarioId}</td>
+          <td>Obtener simulación activa del usuario</td>
+        </tr>
+        <tr>
+          <td><span class="method method-patch">PATCH</span></td>
+          <td class="endpoint-path">/api/simulacion/item/{id}/toggle</td>
+          <td>Mover tarea entre backlog y sprint</td>
+        </tr>
+        <tr>
+          <td><span class="method method-patch">PATCH</span></td>
+          <td class="endpoint-path">/api/simulacion/item/{id}/completar</td>
+          <td>Marcar tarea de simulación como completada</td>
+        </tr>
+        <tr>
+          <td><span class="method method-post">POST</span></td>
+          <td class="endpoint-path">/api/simulacion/cerrar/{id}</td>
+          <td>Cerrar sprint y obtener retrospectiva</td>
+        </tr>
+
+        <!-- SCORM -->
+        <tr><td colspan="3" style="background:#f9fafb;font-weight:600;color:#6c63ff;font-size:0.78rem;padding:8px 16px;">📦 Exportación SCORM</td></tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/api/scorm/app</td>
+          <td>Descarga la app completa como paquete SCORM 1.2</td>
+        </tr>
+        <tr>
+          <td><span class="method method-get">GET</span></td>
+          <td class="endpoint-path">/api/scorm/quiz/{id}</td>
+          <td>Descarga un cuestionario individual como SCORM 1.2</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer>
+  <p>TaskFlow &copy; 2025 &nbsp;·&nbsp; Plataforma de aprendizaje Scrum &nbsp;·&nbsp;
+  <a href="/login.html">Iniciar sesión</a> &nbsp;·&nbsp;
+  <a href="/sitemap.html">Mapa del sitio</a></p>
+</footer>
+
+</body>
+</html>

@@ -32,6 +32,9 @@ public class ScormService {
     @Autowired private TeoriaRepository teoriaRepository;
     @Autowired private ResourceLoader resourceLoader;
 
+    /** URL pública del backend — los JS del paquete SCORM apuntan aquí */
+    private static final String BACKEND_URL = "https://taskflow-1t03.onrender.com";
+
     // ═══════════════════════════════════════════════════════════════════════════
     // PAQUETE SCORM — APLICACIÓN COMPLETA
     // Empaqueta todo el frontend de TaskFlow en un ZIP SCORM 1.2 listo para LMS
@@ -57,11 +60,13 @@ public class ScormService {
             addStatic(zos, "login.css");
             addStatic(zos, "login.min.css");
 
-            // 4. Archivos estáticos — JS
-            addStatic(zos, "script.js");
-            addStatic(zos, "script.min.js");
-            addStatic(zos, "login.js");
-            addStatic(zos, "login.min.js");
+            // 4. JS — reemplazar API_BASE vacío con la URL real de Render
+            String scriptJs  = injectApiBase(readStaticText("script.js"));
+            String loginJs   = injectApiBase(readStaticText("login.js"));
+            addText(zos, "script.js",      scriptJs);
+            addText(zos, "script.min.js",  scriptJs);
+            addText(zos, "login.js",       loginJs);
+            addText(zos, "login.min.js",   loginJs);
 
             // 5. HTML — inyectar scorm_init.js antes de </body>
             String loginHtml = readStaticText("login.html");
@@ -257,6 +262,19 @@ public class ScormService {
              + "  }\n"
              + "\n"
              + "})();\n";
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // Reemplazar API_BASE vacío con la URL real del backend
+    // ───────────────────────────────────────────────────────────────────────────
+
+    private String injectApiBase(String js) {
+        // script.js y login.js definen: const API_BASE = "";
+        // En el paquete SCORM necesitamos la URL absoluta de Render
+        return js.replace(
+            "const API_BASE = \"\";",
+            "const API_BASE = \"" + BACKEND_URL + "\";"
+        );
     }
 
     // ───────────────────────────────────────────────────────────────────────────

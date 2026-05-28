@@ -1005,6 +1005,13 @@ async function seleccionarNivel(nivel) {
         quiz.titulo.replace(/'/g, "\\'") +
         "')\">" +
         (done ? "&#128260; Repasar quiz" : "&#9998; Hacer quiz") +
+        "</button>" +
+        '<button class="btn-scorm-v2" title="Descargar paquete SCORM 1.2 para LMS" onclick="descargarScorm(' +
+        quiz.id +
+        ", '" +
+        quiz.titulo.replace(/'/g, "\\'") +
+        "')\">" +
+        "&#128230; SCORM" +
         "</button>"
       : "";
 
@@ -1166,6 +1173,11 @@ function mostrarResultadoFinal() {
     (porcentaje >= 70 ? "#4caf50" : porcentaje >= 60 ? "#f9a825" : "#e57373") +
     '"></div>' +
     "</div>";
+
+  // Notificar al LMS si hay SCORM activo
+  if (window.TaskFlowSCORM && window.TaskFlowSCORM.isActive()) {
+    window.TaskFlowSCORM.reportarQuiz(porcentaje, aprobado);
+  }
 
   if (aprobado) {
     const usuario = JSON.parse(sessionStorage.getItem("usuario") || "null");
@@ -1488,6 +1500,55 @@ function verExplicacion() {
 function siguientePregunta() {
   indicePregunta++;
   mostrarPregunta();
+}
+
+// ── SCORM 1.2 Export ──────────────────────────────────────────────────────────
+
+/** Descarga toda la aplicación TaskFlow empaquetada como SCORM 1.2 */
+function descargarScormApp() {
+  toast("Generando paquete SCORM de la aplicación…", "info", 4000);
+  fetch(API_BASE + "/api/scorm/app")
+    .then(function(res) {
+      if (!res.ok) throw new Error("Error " + res.status);
+      return res.blob();
+    })
+    .then(function(blob) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "taskflow_scorm_app.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      toast("✅ Paquete SCORM descargado. Súbelo a tu LMS desde Administrar cursos → Importar.", "success", 7000);
+    })
+    .catch(function(err) {
+      toast("No se pudo generar el paquete SCORM: " + err.message, "error");
+    });
+}
+
+/** Descarga un cuestionario individual como SCORM 1.2 */
+function descargarScorm(cuestionarioId, titulo) {
+  toast("Generando paquete SCORM, espera un momento...", "info", 3000);
+  var url = API_BASE + "/api/scorm/quiz/" + cuestionarioId;
+  fetch(url)
+    .then(function(res) {
+      if (!res.ok) throw new Error("Error al generar el paquete SCORM");
+      return res.blob();
+    })
+    .then(function(blob) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "taskflow_scorm_" + cuestionarioId + ".zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      toast("Paquete SCORM descargado. Súbelo a tu LMS (Moodle, Canvas, etc.)", "success", 5000);
+    })
+    .catch(function(err) {
+      toast("No se pudo generar el paquete SCORM: " + err.message, "error");
+    });
 }
 
 function volverListaQuiz() {

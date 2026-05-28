@@ -1778,30 +1778,40 @@ input:focus, textarea:focus, select:focus {
 }
 .confirm-overlay.show { opacity: 1; }
 .confirm-box {
-    background: var(--bg-card);
+    background: #ffffff;
     border-radius: 14px;
     padding: 28px 24px 20px;
     max-width: 360px;
     width: 90%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
     transform: scale(0.9);
     transition: transform 0.2s ease;
 }
+/* Modo oscuro */
+[data-theme="oscuro"] .confirm-box,
+body.oscuro .confirm-box { background: #1e1e2e; }
+
 .confirm-overlay.show .confirm-box { transform: scale(1); }
 .confirm-icon  { font-size: 2.2rem; text-align: center; margin-bottom: 10px; }
-.confirm-title { font-weight: 700; font-size: 1rem; color: var(--text-primary);
+.confirm-title { font-weight: 700; font-size: 1.05rem; color: #111827;
                  text-align: center; margin-bottom: 6px; }
-.confirm-msg   { font-size: 0.85rem; color: var(--text-muted); text-align: center;
+[data-theme="oscuro"] .confirm-title,
+body.oscuro .confirm-title { color: #f3f4f6; }
+
+.confirm-msg   { font-size: 0.88rem; color: #4b5563; text-align: center;
                  margin-bottom: 20px; line-height: 1.5; }
+[data-theme="oscuro"] .confirm-msg,
+body.oscuro .confirm-msg { color: #9ca3af; }
+
 .confirm-btns  { display: flex; gap: 10px; }
 .confirm-btns button { flex: 1; padding: 10px; border-radius: 8px; font-size: 0.88rem;
                         font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
-.confirm-btn-cancel { background: var(--bg-hover); color: var(--text-secondary); }
-.confirm-btn-cancel:hover { background: var(--border-color); }
+.confirm-btn-cancel { background: #f3f4f6; color: #374151; }
+.confirm-btn-cancel:hover { background: #e5e7eb; }
 .confirm-btn-ok { background: #ef4444; color: #fff; }
 .confirm-btn-ok:hover { background: #dc2626; }
-.confirm-btn-ok.ok-blue { background: var(--accent); }
-.confirm-btn-ok.ok-blue:hover { background: var(--accent-hover, #1d4ed8); }
+.confirm-btn-ok.ok-blue { background: #6c63ff; color: #fff; }
+.confirm-btn-ok.ok-blue:hover { background: #5a52d5; }
 
 /* ═══════════════════════════════════════════════════════
    SKELETON LOADERS

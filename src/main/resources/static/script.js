@@ -2341,3 +2341,51 @@ function toggleFaq(el) {
     arrow.textContent = "▴";
   }
 }
+
+// ============================================================
+// SCORM 1.2 — Exportación
+// ============================================================
+
+function descargarScormApp() {
+  toast("Generando paquete SCORM de la aplicación...", "info", 4000);
+  fetch(API_BASE + "/api/scorm/app")
+    .then(function (res) {
+      if (!res.ok) throw new Error("Error " + res.status);
+      return res.blob();
+    })
+    .then(function (blob) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "taskflow_scorm_app.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      toast("Paquete SCORM descargado. Subelo a tu LMS desde Administrar cursos.", "success", 6000);
+    })
+    .catch(function (err) {
+      toast("No se pudo generar el paquete SCORM: " + err.message, "error");
+    });
+}
+
+function descargarScorm(cuestionarioId, titulo) {
+  toast("Generando paquete SCORM del cuestionario...", "info", 3000);
+  fetch(API_BASE + "/api/scorm/quiz/" + cuestionarioId)
+    .then(function (res) {
+      if (!res.ok) throw new Error("Error " + res.status);
+      return res.blob();
+    })
+    .then(function (blob) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "taskflow_scorm_" + cuestionarioId + ".zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      toast("Paquete SCORM descargado. Subelo a tu LMS (Moodle, Canvas, etc.)", "success", 5000);
+    })
+    .catch(function (err) {
+      toast("No se pudo generar el paquete SCORM: " + err.message, "error");
+    });
+}

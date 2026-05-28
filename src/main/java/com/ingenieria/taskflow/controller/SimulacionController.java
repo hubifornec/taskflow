@@ -18,7 +18,8 @@ public class SimulacionController {
     public ResponseEntity<?> iniciar(@RequestBody Map<String, Object> body) {
         try {
             Long usuarioId   = Long.parseLong(body.get("usuarioId").toString());
-            String goal      = body.getOrDefault("sprintGoal", "Completar el Sprint").toString();
+            String goal      = body.getOrDefault("metaSprint",
+                             body.getOrDefault("sprintGoal", "Completar el Sprint")).toString();
             Integer velocidad = body.containsKey("velocidad") ?
                 Integer.parseInt(body.get("velocidad").toString()) : 20;
             return ResponseEntity.ok(

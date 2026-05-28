@@ -1,5 +1,6 @@
 package com.ingenieria.taskflow.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ public class Simulacion {
 
     private String estado;
 
+    @JsonProperty("metaSprint")
     @Column(name = "sprint_goal")
     private String sprintGoal;
 

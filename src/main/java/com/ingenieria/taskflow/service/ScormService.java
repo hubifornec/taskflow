@@ -70,11 +70,15 @@ public class ScormService {
             addText(zos, "login.js",       loginJs);
             addText(zos, "login.min.js",   loginJs);
 
-            // 5. HTML — quitar UserWay (rompe en el sandbox de SCORM Cloud) e inyectar scorm_init.js
+            // 5. HTML — quitar UserWay (rompe en el sandbox de SCORM Cloud)
+            // scorm_init.js SOLO va en index.html: si se inyecta también en login.html,
+            // LMSInitialize se llama dos veces (login + index). La segunda llamada
+            // devuelve error 101 (Already Initialized) y en SCORM Cloud deja LMSSetValue
+            // inoperante, por lo que score y session_time nunca se reportan.
             String loginHtml = removeUserWayWidget(readStaticText("login.html"));
             String indexHtml = removeUserWayWidget(readStaticText("index.html"));
-            addText(zos, "login.html", injectScormScript(loginHtml));
-            addText(zos, "index.html", injectScormScript(indexHtml));
+            addText(zos, "login.html", loginHtml);                  // sin SCORM bridge
+            addText(zos, "index.html", injectScormScript(indexHtml)); // LMSInitialize aquí, una sola vez
         }
 
         log.info("Paquete SCORM completo generado: {} bytes", baos.size());

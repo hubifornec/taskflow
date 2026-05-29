@@ -62,19 +62,17 @@ public class ScormService {
 
             // 4. JS — reemplazar API_BASE y parchear navegación para SCORM
             String scriptJs  = injectApiBase(readStaticText("script.js"));
-            // patchLoginNavigation evita que window.location.href = "index.html"
-            // dispare beforeunload y cierre la sesión SCORM al hacer login.
-            // En su lugar carga index.html en-sitio con document.open/write/close
-            // sin crear una nueva navegación, manteniendo la sesión SCORM activa.
+            // patchLoginNavigation cambia window.location.href por window.location.replace
+            // para navegar a index.html sin cerrar la sesión SCORM (beforeunload solo hace commit).
             String loginJs   = patchLoginNavigation(injectApiBase(readStaticText("login.js")));
             addText(zos, "script.js",      scriptJs);
             addText(zos, "script.min.js",  scriptJs);
             addText(zos, "login.js",       loginJs);
             addText(zos, "login.min.js",   loginJs);
 
-            // 5. HTML — inyectar scorm_init.js antes de </body>
-            String loginHtml = readStaticText("login.html");
-            String indexHtml = readStaticText("index.html");
+            // 5. HTML — quitar UserWay (rompe en el sandbox de SCORM Cloud) e inyectar scorm_init.js
+            String loginHtml = removeUserWayWidget(readStaticText("login.html"));
+            String indexHtml = removeUserWayWidget(readStaticText("index.html"));
             addText(zos, "login.html", injectScormScript(loginHtml));
             addText(zos, "index.html", injectScormScript(indexHtml));
         }
@@ -159,22 +157,34 @@ public class ScormService {
 
     // ───────────────────────────────────────────────────────────────────────────
     // Parche de navegación para el paquete SCORM
-    // Reemplaza window.location.href = "index.html" con document.open/write/close
-    // para que la carga de index.html ocurra en-sitio (sin nueva navegación),
-    // evitando que beforeunload cierre la sesión SCORM al hacer login.
+    // Usa window.location.replace('index.html') para navegar al tablero.
+    // El beforeunload de scorm_init.js detecta que estamos en login.html y solo
+    // llama scormSave() (commit), NO scormFinish(), por lo que la sesión SCORM
+    // permanece abierta. index.html reinicializa el bridge correctamente.
+    // NOTA: document.open/write/close fue descartado porque en el sandbox de
+    // SCORM Cloud los scripts externos inyectados no se ejecutan, dejando
+    // mostrarSeccion() y otras funciones de script.js sin definir.
     // ───────────────────────────────────────────────────────────────────────────
 
     private String patchLoginNavigation(String js) {
         return js.replace(
             "window.location.href = \"index.html\";",
-            "fetch('index.html')" +
-            ".then(function(r){return r.text();})" +
-            ".then(function(html){" +
-            "document.open();" +
-            "document.write(html);" +
-            "document.close();" +
-            "});"
+            "window.location.replace('index.html');"
         );
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // Elimina el widget de UserWay del HTML para el paquete SCORM.
+    // En SCORM Cloud (iframe), UserWay intenta redefinir la propiedad "uwautoplay"
+    // con Object.defineProperty, pero ya existe en el entorno del LMS y lanza
+    // TypeError: Cannot redefine property: uwautoplay, rompiendo todo el JS.
+    // ───────────────────────────────────────────────────────────────────────────
+
+    private String removeUserWayWidget(String html) {
+        // Eliminar comentario + tag <script> de UserWay en una sola pasada
+        return html
+            .replaceAll("(?s)[ \\t]*<!--[^>]*[Uu]ser[Ww]ay[^>]*-->\\s*<script[^>]*cdn\\.userway\\.org[^>]*></script>", "")
+            .replaceAll("<script[^>]*cdn\\.userway\\.org[^>]*></script>", "");
     }
 
     // ───────────────────────────────────────────────────────────────────────────

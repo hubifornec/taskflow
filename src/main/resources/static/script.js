@@ -627,24 +627,30 @@ async function guardarEdicion() {
   const descripcion = document.getElementById("editDescripcion").value.trim();
   const prioridad = document.getElementById("editPrioridad").value;
   const fecha = document.getElementById("editFecha").value;
+  const usuario = JSON.parse(sessionStorage.getItem("usuario") || "null");
 
   if (!titulo) {
     toast("El título es obligatorio", "warning"); return;
   }
 
-  await fetch(`${API_BASE}/tareas/${id}`, {
+  const res = await fetch(`${API_BASE}/tareas/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       titulo,
       descripcion,
+      usuarioId: usuario ? usuario.id : null,
       prioridad: prioridad ? parseInt(prioridad) : null,
-      fechaVencimiento: fecha ? fecha + "T00:00:00" : null,
+      fechaVencimiento: fecha || null,
     }),
   });
 
   document.getElementById("modalEdicion").classList.add("oculto");
-  toast("Tarea actualizada correctamente", "success");
+  if (res.ok) {
+    toast("Tarea actualizada correctamente", "success");
+  } else {
+    toast("Error al actualizar la tarea", "error");
+  }
   await cargarTareas();
 }
 

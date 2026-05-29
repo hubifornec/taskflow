@@ -98,7 +98,7 @@ public class QuizController {
             return ResponseEntity.ok(Map.of(
                     "nivel", usuario.getNivel(),
                     "quizzesCompletados", usuario.getQuizzesCompletados(),
-                    "totalQuizzes", 8
+                    "totalQuizzes", 4
             ));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));

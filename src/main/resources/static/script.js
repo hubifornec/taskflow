@@ -91,6 +91,7 @@ let quizzes = [];
 let preguntasActivas = [];
 let indicePregunta = 0;
 let puntajeAcumulado = 0;
+let quizActualId = null;
 
 function mostrarSeccion(nombre) {
   document
@@ -1213,24 +1214,38 @@ function mostrarResultadoFinal() {
   if (aprobado) {
     const usuario = JSON.parse(sessionStorage.getItem("usuario") || "null");
     if (usuario) {
-      fetch(API_BASE + "/usuarios/" + usuario.id + "/completar-quiz", {
-        method: "POST",
-      })
-        .then(function (r) {
-          return r.json();
+      // Verificar si este quiz ya fue completado antes para evitar
+      // que "Repasar quiz" cuente como una nueva completación
+      const clave = "tf_quizzes_ok_" + usuario.id;
+      const completados = JSON.parse(localStorage.getItem(clave) || "[]");
+      const yaCompletado = quizActualId && completados.includes(quizActualId);
+
+      if (!yaCompletado) {
+        if (quizActualId) {
+          completados.push(quizActualId);
+          localStorage.setItem(clave, JSON.stringify(completados));
+        }
+        fetch(API_BASE + "/usuarios/" + usuario.id + "/completar-quiz", {
+          method: "POST",
         })
-        .then(function (usuarioAct) {
-          sessionStorage.setItem("usuario", JSON.stringify(usuarioAct));
-          if (usuarioAct.nivel !== usuario.nivel) {
-            mostrarNotificacion(
-              "&#127891; Nivel Avanzado desbloqueado! Felicitaciones!",
-              "nivel",
-              6000,
-            );
-            lanzarConfetti();
-          }
-          notificarActividad("QUIZ_COMPLETADO");
-        });
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (usuarioAct) {
+            sessionStorage.setItem("usuario", JSON.stringify(usuarioAct));
+            if (usuarioAct.nivel !== usuario.nivel) {
+              mostrarNotificacion(
+                "&#127891; Nivel Avanzado desbloqueado! Felicitaciones!",
+                "nivel",
+                6000,
+              );
+              lanzarConfetti();
+            }
+            notificarActividad("QUIZ_COMPLETADO");
+          });
+      } else {
+        mostrarNotificacion("&#128260; Quiz repasado — el progreso ya estaba registrado.", "info", 3000);
+      }
     }
   } else {
     mostrarNotificacion("No alcanzaste el 60%. Intentalo de nuevo!", "error");
@@ -1358,6 +1373,7 @@ async function iniciarQuiz(cuestionarioId, titulo) {
   preguntasActivas = await res.json();
   indicePregunta = 0;
   puntajeAcumulado = 0;
+  quizActualId = cuestionarioId;
 
   document.getElementById("listaQuizzesWrap").classList.add("oculto");
   document.getElementById("vistaTeoria").classList.add("oculto");
@@ -2399,24 +2415,3 @@ function descargarScormApp() {
     });
 }
 
-function descargarScorm(cuestionarioId, titulo) {
-  toast("Generando paquete SCORM del cuestionario...", "info", 3000);
-  fetch(API_BASE + "/api/scorm/quiz/" + cuestionarioId)
-    .then(function (res) {
-      if (!res.ok) throw new Error("Error " + res.status);
-      return res.blob();
-    })
-    .then(function (blob) {
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "taskflow_scorm_" + cuestionarioId + ".zip";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(a.href);
-      toast("Paquete SCORM descargado. Subelo a tu LMS (Moodle, Canvas, etc.)", "success", 5000);
-    })
-    .catch(function (err) {
-      toast("No se pudo generar el paquete SCORM: " + err.message, "error");
-    });
-}

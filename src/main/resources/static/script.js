@@ -612,22 +612,29 @@ async function eliminarTarea(id) {
   await cargarTareas();
 }
 
-function abrirEdicion(id, titulo, descripcion, prioridad, fecha) {
-  // Normalizar fecha: puede llegar como "2025-12-31" (string ISO) o como array [2025,12,31]
-  let fechaNorm = "";
-  if (fecha && fecha !== "null" && fecha !== "undefined") {
-    if (Array.isArray(fecha)) {
-      // formato legacy [año, mes, dia]
-      fechaNorm = `${fecha[0]}-${String(fecha[1]).padStart(2,"0")}-${String(fecha[2]).padStart(2,"0")}`;
-    } else if (typeof fecha === "string" && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-      fechaNorm = fecha;
+function normalizarFecha(fecha) {
+  // Jackson 3.x serializa LocalDate como array [2025,12,31] → llega como "2025,12,31" en el onclick
+  // También puede llegar como "2025-12-31" (ISO) si en algún momento se configura el mapper
+  if (!fecha || fecha === "null" || fecha === "undefined" || fecha === "") return "";
+  // Caso 1: ya viene en ISO "2025-12-31"
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return fecha;
+  // Caso 2: viene como "2025,12,31" (array stringificado por Jackson)
+  const partes = String(fecha).split(",");
+  if (partes.length === 3) {
+    const [y, m, d] = partes.map(Number);
+    if (y && m && d) {
+      return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
     }
   }
+  return "";
+}
+
+function abrirEdicion(id, titulo, descripcion, prioridad, fecha) {
   document.getElementById("editId").value = id;
   document.getElementById("editTitulo").value = titulo;
   document.getElementById("editDescripcion").value = descripcion;
   document.getElementById("editPrioridad").value = prioridad;
-  document.getElementById("editFecha").value = fechaNorm;
+  document.getElementById("editFecha").value = normalizarFecha(fecha);
   document.getElementById("modalEdicion").classList.remove("oculto");
 }
 

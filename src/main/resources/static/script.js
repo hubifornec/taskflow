@@ -643,22 +643,27 @@ async function guardarEdicion() {
     toast("El título es obligatorio", "warning"); return;
   }
 
+  const payload = {
+    titulo,
+    descripcion,
+    usuarioId: usuario ? usuario.id : null,
+    prioridad: prioridad ? parseInt(prioridad) : null,
+    fechaVencimiento: fecha || null,
+  };
+  console.log("[EDIT] payload →", JSON.stringify(payload));
+
   const res = await fetch(`${API_BASE}/tareas/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      titulo,
-      descripcion,
-      usuarioId: usuario ? usuario.id : null,
-      prioridad: prioridad ? parseInt(prioridad) : null,
-      fechaVencimiento: fecha || null,
-    }),
+    body: JSON.stringify(payload),
   });
 
   document.getElementById("modalEdicion").classList.add("oculto");
   if (res.ok) {
     toast("Tarea actualizada correctamente", "success");
   } else {
+    const errBody = await res.text();
+    console.error("[EDIT] Error " + res.status + " →", errBody);
     toast("Error al actualizar la tarea", "error");
   }
   await cargarTareas();

@@ -60,9 +60,13 @@ public class ScormService {
             addStatic(zos, "login.css");
             addStatic(zos, "login.min.css");
 
-            // 4. JS — reemplazar API_BASE vacío con la URL real de Render
+            // 4. JS — reemplazar API_BASE y parchear navegación para SCORM
             String scriptJs  = injectApiBase(readStaticText("script.js"));
-            String loginJs   = injectApiBase(readStaticText("login.js"));
+            // patchLoginNavigation evita que window.location.href = "index.html"
+            // dispare beforeunload y cierre la sesión SCORM al hacer login.
+            // En su lugar carga index.html en-sitio con document.open/write/close
+            // sin crear una nueva navegación, manteniendo la sesión SCORM activa.
+            String loginJs   = patchLoginNavigation(injectApiBase(readStaticText("login.js")));
             addText(zos, "script.js",      scriptJs);
             addText(zos, "script.min.js",  scriptJs);
             addText(zos, "login.js",       loginJs);
@@ -151,6 +155,26 @@ public class ScormService {
              + "  </resources>\n"
              + "\n"
              + "</manifest>\n";
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // Parche de navegación para el paquete SCORM
+    // Reemplaza window.location.href = "index.html" con document.open/write/close
+    // para que la carga de index.html ocurra en-sitio (sin nueva navegación),
+    // evitando que beforeunload cierre la sesión SCORM al hacer login.
+    // ───────────────────────────────────────────────────────────────────────────
+
+    private String patchLoginNavigation(String js) {
+        return js.replace(
+            "window.location.href = \"index.html\";",
+            "fetch('index.html')" +
+            ".then(function(r){return r.text();})" +
+            ".then(function(html){" +
+            "document.open();" +
+            "document.write(html);" +
+            "document.close();" +
+            "});"
+        );
     }
 
     // ───────────────────────────────────────────────────────────────────────────

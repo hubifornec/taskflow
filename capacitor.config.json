@@ -1,5 +1,9 @@
 {
   "appId": "com.taskflow.app",
   "appName": "TaskFlow",
-  "webDir": "src/main/resources/static"
+  "webDir": "src/main/resources/static",
+  "server": {
+    "url": "https://taskflow-1t03.onrender.com",
+    "cleartext": true
+  }
 }

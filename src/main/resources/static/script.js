@@ -613,11 +613,21 @@ async function eliminarTarea(id) {
 }
 
 function abrirEdicion(id, titulo, descripcion, prioridad, fecha) {
+  // Normalizar fecha: puede llegar como "2025-12-31" (string ISO) o como array [2025,12,31]
+  let fechaNorm = "";
+  if (fecha && fecha !== "null" && fecha !== "undefined") {
+    if (Array.isArray(fecha)) {
+      // formato legacy [año, mes, dia]
+      fechaNorm = `${fecha[0]}-${String(fecha[1]).padStart(2,"0")}-${String(fecha[2]).padStart(2,"0")}`;
+    } else if (typeof fecha === "string" && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      fechaNorm = fecha;
+    }
+  }
   document.getElementById("editId").value = id;
   document.getElementById("editTitulo").value = titulo;
   document.getElementById("editDescripcion").value = descripcion;
   document.getElementById("editPrioridad").value = prioridad;
-  document.getElementById("editFecha").value = fecha;
+  document.getElementById("editFecha").value = fechaNorm;
   document.getElementById("modalEdicion").classList.remove("oculto");
 }
 

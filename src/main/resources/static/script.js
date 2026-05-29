@@ -43,7 +43,6 @@ function confirmDialog(mensaje, titulo = "¿Estás seguro?", icono = "🗑️", 
       </div>`;
     document.body.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add("show"));
-
     const close = (val) => {
       overlay.classList.remove("show");
       setTimeout(() => overlay.remove(), 200);
@@ -665,11 +664,15 @@ async function drop(e) {
   const idTarea = tareaArrastrada;
   if (!idTarea) return;
 
-  await fetch(`${API_BASE}/tareas/${idTarea}/status`, {
+  const res = await fetch(`${API_BASE}/tareas/${idTarea}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ estado: nuevoEstado }),
   });
+
+  if (res.ok && nuevoEstado === "completada") {
+    await notificarActividad("TAREA_COMPLETADA");
+  }
 
   await cargarTareas();
 }

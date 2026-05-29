@@ -6,6 +6,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
+/**
+ * Controlador REST del modulo de simulacion de sprint planning de TaskFlow.
+ * <p>
+ * Gestiona el ciclo completo de una simulacion: inicio, consulta, seleccion
+ * de items para el sprint, completado de items y cierre del sprint.
+ * Base: {@code /api/simulacion}
+ * </p>
+ * <ul>
+ *   <li>{@code POST /api/simulacion/iniciar} — Iniciar nueva simulacion</li>
+ *   <li>{@code GET  /api/simulacion/activa/{usuarioId}} — Consultar simulacion activa</li>
+ *   <li>{@code PATCH /api/simulacion/item/{id}/toggle} — Incluir/excluir item del sprint</li>
+ *   <li>{@code PATCH /api/simulacion/item/{id}/completar} — Marcar item como completado</li>
+ *   <li>{@code POST /api/simulacion/cerrar/{id}} — Cerrar sprint y obtener resultados</li>
+ * </ul>
+ *
+ * @author TaskFlow CM
+ * @version 1.0
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/simulacion")

@@ -7,6 +7,18 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Servicio que gestiona la simulacion de sprint planning de TaskFlow.
+ * <p>
+ * Permite al estudiante practicar la planificacion de un sprint Scrum con
+ * 12 historias de usuario predefinidas del mundo real. Calcula metricas
+ * al cerrar el sprint: puntos planeados vs entregados, velocidad real,
+ * exito (entregados >= planeados * 0.8) y genera una retrospectiva automatica.
+ * </p>
+ *
+ * @author TaskFlow CM
+ * @version 1.0
+ */
 @Service
 public class SimulacionService {
 
@@ -28,6 +40,16 @@ public class SimulacionService {
         Map.of("titulo", "Documentar el incremento entregado",             "storyPoints", 3)
     );
 
+    /**
+     * Inicia una nueva simulacion de sprint planning para el usuario.
+     * Si existia una simulacion activa previa, la pasa a estado {@code "abandonado"}.
+     * Crea automaticamente los 12 items de backlog predefinidos.
+     *
+     * @param usuarioId  ID del usuario que inicia la simulacion
+     * @param sprintGoal objetivo del sprint definido por el usuario
+     * @param velocidad  velocidad del equipo en story points (defecto: 20)
+     * @return mapa con: {@code simulacion} y {@code items} (lista de 12 items del backlog)
+     */
     public Map<String, Object> iniciarSimulacion(Long usuarioId, String sprintGoal, Integer velocidad) {
         simulacionRepository.findByUsuarioIdAndEstado(usuarioId, "activo")
             .ifPresent(s -> { s.setEstado("abandonado"); simulacionRepository.save(s); });
@@ -56,6 +78,13 @@ public class SimulacionService {
             "items", simulacionItemRepository.findBySimulacionId(sim.getId()));
     }
 
+    /**
+     * Consulta la simulacion activa del usuario si existe.
+     *
+     * @param usuarioId ID del usuario
+     * @return mapa con {@code activa: false} si no hay simulacion, o
+     *         {@code activa: true, simulacion, items} si la hay
+     */
     public Map<String, Object> obtenerSimulacionActiva(Long usuarioId) {
         Optional<Simulacion> sim = simulacionRepository
             .findByUsuarioIdAndEstado(usuarioId, "activo");
@@ -64,6 +93,13 @@ public class SimulacionService {
             "items", simulacionItemRepository.findBySimulacionId(sim.get().getId()));
     }
 
+    /**
+     * Alterna el estado de un item entre incluido y excluido del sprint.
+     *
+     * @param itemId ID del item a alternar
+     * @return el {@code SimulacionItem} con {@code enSprint} actualizado
+     * @throws RuntimeException si el item no existe
+     */
     public SimulacionItem toggleItemSprint(Long itemId) {
         SimulacionItem item = simulacionItemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item no encontrado"));
@@ -71,6 +107,13 @@ public class SimulacionService {
         return simulacionItemRepository.save(item);
     }
 
+    /**
+     * Marca un item del sprint como completado (entregado).
+     *
+     * @param itemId ID del item a completar
+     * @return el {@code SimulacionItem} con {@code completado = true}
+     * @throws RuntimeException si el item no existe
+     */
     public SimulacionItem completarItem(Long itemId) {
         SimulacionItem item = simulacionItemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item no encontrado"));
@@ -78,6 +121,15 @@ public class SimulacionService {
         return simulacionItemRepository.save(item);
     }
 
+    /**
+     * Cierra el sprint de una simulacion y calcula los resultados finales.
+     * El sprint es exitoso si los puntos entregados son >= 80% de los planeados.
+     *
+     * @param simulacionId ID de la simulacion a cerrar
+     * @return mapa con: {@code puntosPlaneados}, {@code puntosEntregados}, {@code velocidadReal},
+     *         {@code exitoso}, {@code completados}, {@code total}, {@code retrospectiva}
+     * @throws RuntimeException si la simulacion no existe
+     */
     public Map<String, Object> cerrarSprint(Long simulacionId) {
         Simulacion sim = simulacionRepository.findById(simulacionId)
                 .orElseThrow(() -> new RuntimeException("Simulación no encontrada"));
@@ -106,6 +158,14 @@ public class SimulacionService {
         );
     }
 
+    /**
+     * Genera el texto de retrospectiva del sprint segun el resultado obtenido.
+     *
+     * @param exitoso    {@code true} si se alcanzo el 80% de los puntos planeados
+     * @param planeados  story points totales planificados para el sprint
+     * @param entregados story points efectivamente completados
+     * @return texto de retroalimentacion para mostrar al estudiante
+     */
     private String generarRetrospectiva(boolean exitoso, int planeados, int entregados) {
         if (exitoso)
             return "✅ ¡Sprint exitoso! Entregaste " + entregados + " de " + planeados +

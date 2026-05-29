@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Diccionario de Clases — TaskFlowCM Sprint 2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 12pt; color: #1F2937; background: #fff; line-height: 1.5; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 40px 60px; }
+
+  /* COVER */
+  .cover { text-align: center; padding: 80px 0 60px; border-bottom: 3px solid #4F46E5; margin-bottom: 40px; }
+  .cover h1 { font-size: 32pt; color: #4F46E5; margin-bottom: 10px; }
+  .cover h2 { font-size: 18pt; color: #6B7280; font-weight: normal; margin-bottom: 8px; }
+  .cover code { font-size: 11pt; color: #374151; background: #F3F4F6; padding: 4px 10px; border-radius: 4px; }
+
+  /* SECTION HEADERS */
+  h1.sec { background: #4F46E5; color: #fff; padding: 10px 16px; font-size: 14pt; margin: 32px 0 16px; border-radius: 4px; }
+  h2.cls { font-size: 13pt; color: #1E1B4B; border-bottom: 3px solid #4F46E5; padding-bottom: 4px; margin: 24px 0 10px; }
+  h3.sub { font-size: 11pt; color: #374151; font-weight: bold; margin: 14px 0 6px; }
+
+  /* METADATA LINE */
+  .meta { font-size: 10pt; color: #6B7280; margin-bottom: 10px; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10.5pt; }
+  th { background: #EEF2FF; color: #1E1B4B; font-weight: bold; text-align: left;
+       padding: 7px 10px; border: 1px solid #CCCCCC; }
+  td { padding: 6px 10px; border: 1px solid #CCCCCC; vertical-align: top; font-family: 'Courier New', monospace; }
+  tr:nth-child(even) td { background: #F9FAFB; }
+  tr:nth-child(odd)  td { background: #FFFFFF; }
+
+  /* TOC */
+  .toc { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; padding: 20px 24px; margin-bottom: 30px; }
+  .toc h2 { font-size: 13pt; color: #1E1B4B; margin-bottom: 12px; font-family: Arial; }
+  .toc a { color: #4F46E5; text-decoration: none; font-size: 11pt; display: block; padding: 2px 0; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .toc-l2 { padding-left: 18px; font-size: 10.5pt; }
+
+  /* NOTES */
+  .note { background: #FFF7ED; border-left: 4px solid #F59E0B; padding: 8px 12px; margin: 8px 0; font-size: 10.5pt; font-family: Arial; }
+
+  @media print {
+    .page { max-width: 100%; padding: 20px; }
+    h1.sec { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- COVER -->
+<div class="cover">
+  <h1>Diccionario de Clases</h1>
+  <h2>TaskFlowCM &mdash; Sprint 2</h2>
+  <code>com.ingenieria.taskflow</code>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h2>Tabla de Contenidos</h2>
+  <a href="#s1">1. Entidades &mdash; Capa de Dominio (model)</a>
+    <a class="toc-l2" href="#s1-1">1.1 Usuario</a>
+    <a class="toc-l2" href="#s1-2">1.2 Tarea</a>
+    <a class="toc-l2" href="#s1-3">1.3 Cuestionario</a>
+    <a class="toc-l2" href="#s1-4">1.4 Pregunta</a>
+    <a class="toc-l2" href="#s1-5">1.5 Teoria</a>
+    <a class="toc-l2" href="#s1-6">1.6 Logro</a>
+    <a class="toc-l2" href="#s1-7">1.7 LogroUsuario</a>
+    <a class="toc-l2" href="#s1-8">1.8 Simulacion</a>
+    <a class="toc-l2" href="#s1-9">1.9 SimulacionItem</a>
+  <a href="#s2">2. DTOs (dto)</a>
+    <a class="toc-l2" href="#s2-1">2.1 RegisterRequest</a>
+    <a class="toc-l2" href="#s2-2">2.2 LoginRequest</a>
+    <a class="toc-l2" href="#s2-3">2.3 TareaRequest</a>
+    <a class="toc-l2" href="#s2-4">2.4 UsuarioResponse</a>
+  <a href="#s3">3. Excepciones (exception)</a>
+    <a class="toc-l2" href="#s3-1">3.1 BadRequestException</a>
+    <a class="toc-l2" href="#s3-2">3.2 ConflictException</a>
+    <a class="toc-l2" href="#s3-3">3.3 ResourceNotFoundException</a>
+    <a class="toc-l2" href="#s3-4">3.4 GlobalExceptionHandler</a>
+  <a href="#s4">4. Repositories (repository)</a>
+    <a class="toc-l2" href="#s4-1">4.1 UsuarioRepository</a>
+    <a class="toc-l2" href="#s4-2">4.2 TareaRepository</a>
+    <a class="toc-l2" href="#s4-3">4.3 CuestionarioRepository</a>
+    <a class="toc-l2" href="#s4-4">4.4 PreguntaRepository</a>
+    <a class="toc-l2" href="#s4-5">4.5 TeoriaRepository</a>
+    <a class="toc-l2" href="#s4-6">4.6 LogroRepository</a>
+    <a class="toc-l2" href="#s4-7">4.7 LogroUsuarioRepository</a>
+    <a class="toc-l2" href="#s4-8">4.8 SimulacionRepository</a>
+    <a class="toc-l2" href="#s4-9">4.9 SimulacionItemRepository</a>
+  <a href="#s5">5. Services (service)</a>
+    <a class="toc-l2" href="#s5-1">5.1 AuthService</a>
+    <a class="toc-l2" href="#s5-2">5.2 TareaService</a>
+    <a class="toc-l2" href="#s5-3">5.3 QuizService</a>
+    <a class="toc-l2" href="#s5-4">5.4 GamificacionService</a>
+    <a class="toc-l2" href="#s5-5">5.5 SimulacionService</a>
+    <a class="toc-l2" href="#s5-6">5.6 ScormService</a>
+  <a href="#s6">6. Controllers (controller)</a>
+    <a class="toc-l2" href="#s6-1">6.1 AuthController</a>
+    <a class="toc-l2" href="#s6-2">6.2 TareaController</a>
+    <a class="toc-l2" href="#s6-3">6.3 QuizController</a>
+    <a class="toc-l2" href="#s6-4">6.4 GamificacionController</a>
+    <a class="toc-l2" href="#s6-5">6.5 SimulacionController</a>
+    <a class="toc-l2" href="#s6-6">6.6 ScormController</a>
+    <a class="toc-l2" href="#s6-7">6.7 HomeController</a>
+  <a href="#s7">7. Configuración (config)</a>
+    <a class="toc-l2" href="#s7-1">7.1 AppConfig</a>
+  <a href="#s8">8. Infraestructura Spring Boot</a>
+    <a class="toc-l2" href="#s8-1">8.1 TaskflowApplication</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 1. ENTIDADES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s1">1. Entidades &mdash; Capa de Dominio (model)</h1>
+
+<!-- 1.1 Usuario -->
+<h2 class="cls" id="s1-1">1.1 &nbsp;Usuario</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="usuarios")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:30%">Anotaciones JPA / Config</th><th style="width:18%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td></td><td>String</td><td>nombre</td></tr>
+  <tr><td>@Column(unique=true)</td><td>String</td><td>email</td></tr>
+  <tr><td></td><td>String</td><td>password</td></tr>
+  <tr><td>default = "basico"</td><td>String</td><td>nivel</td></tr>
+  <tr><td>@Column(name="quizzes_completados") &nbsp;default = 0</td><td>Integer</td><td>quizzesCompletados</td></tr>
+  <tr><td>@Column(name="created_at")</td><td>LocalDateTime</td><td>createdAt</td></tr>
+  <tr><td>default = 0</td><td>Integer</td><td>puntos</td></tr>
+</table>
+
+<!-- 1.2 Tarea -->
+<h2 class="cls" id="s1-2">1.2 &nbsp;Tarea</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="tareas")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:38%">Anotaciones JPA / Config</th><th style="width:18%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td>@Column(nullable=false)</td><td>String</td><td>titulo</td></tr>
+  <tr><td></td><td>String</td><td>descripcion</td></tr>
+  <tr><td>@Column(name="columna_id")</td><td>Integer</td><td>columnaId</td></tr>
+  <tr><td>default = 5</td><td>Integer</td><td>prioridad</td></tr>
+  <tr><td>@Column(name="fecha_vencimiento")</td><td>LocalDate</td><td>fechaVencimiento</td></tr>
+  <tr><td>default = "pendiente"</td><td>String</td><td>estado</td></tr>
+  <tr><td>@Column(name="usuario_id")</td><td>Long</td><td>usuarioId</td></tr>
+  <tr><td>@Column(name="puntos_historia") &nbsp;default = 3</td><td>Integer</td><td>puntosHistoria</td></tr>
+  <tr><td>@Column(name="created_at")</td><td>LocalDateTime</td><td>createdAt</td></tr>
+</table>
+
+<!-- 1.3 Cuestionario -->
+<h2 class="cls" id="s1-3">1.3 &nbsp;Cuestionario</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="cuestionarios")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:42%">Anotaciones JPA / Config</th><th style="width:16%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td>@Column(nullable=false, length=200)</td><td>String</td><td>titulo</td></tr>
+  <tr><td></td><td>String</td><td>descripcion</td></tr>
+  <tr><td>@Column(name="duracion_minutos")</td><td>Integer</td><td>duracionMinutos</td></tr>
+  <tr><td>@Column(nullable=false, length=20)</td><td>String</td><td>tipo</td></tr>
+  <tr><td></td><td>String</td><td>nivel</td></tr>
+  <tr><td>@Column(name="created_at")</td><td>LocalDateTime</td><td>createdAt</td></tr>
+  <tr><td>@JsonIgnore &nbsp;@OneToMany(mappedBy="cuestionario", cascade=CascadeType.ALL)</td><td>List&lt;Pregunta&gt;</td><td>preguntas</td></tr>
+</table>
+
+<!-- 1.4 Pregunta -->
+<h2 class="cls" id="s1-4">1.4 &nbsp;Pregunta</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="preguntas")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:48%">Anotaciones JPA / Config</th><th style="width:16%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td>@Column(nullable=false, columnDefinition="TEXT")</td><td>String</td><td>texto</td></tr>
+  <tr><td>@Column(columnDefinition="TEXT")</td><td>String</td><td>opciones</td></tr>
+  <tr><td>@Column(name="respuesta_correcta", nullable=false, length=500)</td><td>String</td><td>respuestaCorrecta</td></tr>
+  <tr><td>@Column(name="tipo_pregunta", length=20)</td><td>String</td><td>tipoPregunta</td></tr>
+  <tr><td></td><td>Integer</td><td>puntaje</td></tr>
+  <tr><td>@Column(columnDefinition="TEXT")</td><td>String</td><td>explicacion</td></tr>
+  <tr><td>@JsonIgnore &nbsp;@ManyToOne &nbsp;@JoinColumn(name="cuestionario_id", nullable=false)</td><td>Cuestionario</td><td>cuestionario</td></tr>
+</table>
+
+<!-- 1.5 Teoria -->
+<h2 class="cls" id="s1-5">1.5 &nbsp;Teoria</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="teorias")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:36%">Anotaciones JPA / Config</th><th style="width:18%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td>@Column(name="cuestionario_id")</td><td>Long</td><td>cuestionarioId</td></tr>
+  <tr><td></td><td>String</td><td>titulo</td></tr>
+  <tr><td>@Column(columnDefinition="TEXT")</td><td>String</td><td>contenido</td></tr>
+  <tr><td></td><td>Integer</td><td>orden</td></tr>
+  <tr><td></td><td>String</td><td>fuente</td></tr>
+</table>
+
+<!-- 1.6 Logro -->
+<h2 class="cls" id="s1-6">1.6 &nbsp;Logro</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="logros")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:36%">Anotaciones JPA / Config</th><th style="width:18%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td></td><td>String</td><td>codigo</td></tr>
+  <tr><td></td><td>String</td><td>nombre</td></tr>
+  <tr><td></td><td>String</td><td>descripcion</td></tr>
+  <tr><td></td><td>String</td><td>icono</td></tr>
+  <tr><td>@Column(name="puntos_recompensa")</td><td>Integer</td><td>puntosRecompensa</td></tr>
+</table>
+
+<!-- 1.7 LogroUsuario -->
+<h2 class="cls" id="s1-7">1.7 &nbsp;LogroUsuario</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="logros_usuario")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:38%">Anotaciones JPA / Config</th><th style="width:18%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td>@Column(name="usuario_id")</td><td>Long</td><td>usuarioId</td></tr>
+  <tr><td>@ManyToOne &nbsp;@JoinColumn(name="logro_id")</td><td>Logro</td><td>logro</td></tr>
+  <tr><td>@Column(name="obtenido_at")</td><td>LocalDateTime</td><td>obtenidoAt</td></tr>
+</table>
+
+<!-- 1.8 Simulacion -->
+<h2 class="cls" id="s1-8">1.8 &nbsp;Simulacion</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="simulaciones")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:48%">Anotaciones JPA / Config</th><th style="width:16%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td>@Column(name="usuario_id")</td><td>Long</td><td>usuarioId</td></tr>
+  <tr><td></td><td>String</td><td>estado</td></tr>
+  <tr><td>@JsonProperty("metaSprint") &nbsp;@Column(name="sprint_goal")</td><td>String</td><td>sprintGoal</td></tr>
+  <tr><td>@Column(name="velocidad_equipo")</td><td>Integer</td><td>velocidadEquipo</td></tr>
+  <tr><td>@Column(name="created_at")</td><td>LocalDateTime</td><td>createdAt</td></tr>
+  <tr><td>@Column(name="cerrado_at")</td><td>LocalDateTime</td><td>cerradoAt</td></tr>
+</table>
+
+<!-- 1.9 SimulacionItem -->
+<h2 class="cls" id="s1-9">1.9 &nbsp;SimulacionItem</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.model &nbsp;|&nbsp; Anotaciones: @Data &middot; @Entity &middot; @Table(name="simulacion_items")</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:36%">Anotaciones JPA / Config</th><th style="width:18%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@Id &nbsp;@GeneratedValue(strategy=IDENTITY)</td><td>Long</td><td>id</td></tr>
+  <tr><td>@Column(name="simulacion_id")</td><td>Long</td><td>simulacionId</td></tr>
+  <tr><td></td><td>String</td><td>titulo</td></tr>
+  <tr><td>@Column(name="story_points")</td><td>Integer</td><td>storyPoints</td></tr>
+  <tr><td>@Column(name="en_sprint")</td><td>Boolean</td><td>enSprint</td></tr>
+  <tr><td></td><td>Boolean</td><td>completado</td></tr>
+  <tr><td></td><td>Integer</td><td>orden</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 2. DTOs -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s2">2. DTOs &mdash; Objetos de Transferencia de Datos (dto)</h1>
+
+<!-- 2.1 RegisterRequest -->
+<h2 class="cls" id="s2-1">2.1 &nbsp;RegisterRequest</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.dto &nbsp;|&nbsp; Anotación: @Data</p>
+<h3 class="sub">Atributos y Validaciones</h3>
+<table>
+  <tr><th style="width:42%">Validaciones Jakarta</th><th style="width:16%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@NotBlank(message="El nombre es obligatorio") &nbsp;@Size(min=2, max=100, message="El nombre debe tener entre 2 y 100 caracteres")</td><td>String</td><td>nombre</td></tr>
+  <tr><td>@NotBlank(message="El email es obligatorio") &nbsp;@Email(message="El email no tiene un formato válido")</td><td>String</td><td>email</td></tr>
+  <tr><td>@NotBlank(message="La contraseña es obligatoria") &nbsp;@Size(min=8, message="La contraseña debe tener mínimo 8 caracteres")</td><td>String</td><td>password</td></tr>
+</table>
+
+<!-- 2.2 LoginRequest -->
+<h2 class="cls" id="s2-2">2.2 &nbsp;LoginRequest</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.dto &nbsp;|&nbsp; Anotación: @Data</p>
+<h3 class="sub">Atributos y Validaciones</h3>
+<table>
+  <tr><th style="width:50%">Validaciones Jakarta</th><th style="width:16%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@NotBlank(message="El email es obligatorio") &nbsp;@Email(message="El email no tiene un formato válido")</td><td>String</td><td>email</td></tr>
+  <tr><td>@NotBlank(message="La contraseña es obligatoria")</td><td>String</td><td>password</td></tr>
+</table>
+
+<!-- 2.3 TareaRequest -->
+<h2 class="cls" id="s2-3">2.3 &nbsp;TareaRequest</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.dto &nbsp;|&nbsp; Anotación: @Data</p>
+<h3 class="sub">Atributos y Validaciones</h3>
+<table>
+  <tr><th style="width:50%">Validaciones Jakarta</th><th style="width:16%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>@NotBlank(message="El título es obligatorio") &nbsp;@Size(max=255, message="El título no puede superar 255 caracteres")</td><td>String</td><td>titulo</td></tr>
+  <tr><td>@Size(max=1000, message="La descripción no puede superar 1000 caracteres")</td><td>String</td><td>descripcion</td></tr>
+  <tr><td>@NotNull(message="El usuario es obligatorio")</td><td>Long</td><td>usuarioId</td></tr>
+  <tr><td>@Min(value=1, message="La prioridad mínima es 1") &nbsp;@Max(value=10, message="La prioridad máxima es 10")</td><td>Integer</td><td>prioridad</td></tr>
+  <tr><td></td><td>LocalDate</td><td>fechaVencimiento</td></tr>
+  <tr><td></td><td>Integer</td><td>puntosHistoria</td></tr>
+</table>
+
+<!-- 2.4 UsuarioResponse -->
+<h2 class="cls" id="s2-4">2.4 &nbsp;UsuarioResponse</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.dto &nbsp;|&nbsp; Anotación: @Data</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:36%">Modificador</th><th style="width:20%">Tipo Java</th><th>Campo</th></tr>
+  <tr><td>private</td><td>Long</td><td>id</td></tr>
+  <tr><td>private</td><td>String</td><td>nombre</td></tr>
+  <tr><td>private</td><td>String</td><td>email</td></tr>
+  <tr><td>private</td><td>String</td><td>nivel</td></tr>
+  <tr><td>private</td><td>Integer</td><td>quizzesCompletados</td></tr>
+  <tr><td>private</td><td>Integer</td><td>puntos</td></tr>
+  <tr><td>private</td><td>LocalDateTime</td><td>createdAt</td></tr>
+</table>
+<h3 class="sub">Métodos</h3>
+<table>
+  <tr><th style="width:42%">Firma</th><th>Descripción</th></tr>
+  <tr><td>public static UsuarioResponse from(Usuario u)</td><td>Factory method. Crea una instancia UsuarioResponse, llama a los setters desde u (id, nombre, email, nivel, quizzesCompletados, puntos, createdAt) y retorna el objeto.</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 3. EXCEPCIONES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s3">3. Excepciones (exception)</h1>
+
+<!-- 3.1 BadRequestException -->
+<h2 class="cls" id="s3-1">3.1 &nbsp;BadRequestException</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.exception &nbsp;|&nbsp; Extiende: RuntimeException</p>
+<table>
+  <tr><th style="width:42%">Constructor</th><th>Descripción</th></tr>
+  <tr><td>public BadRequestException(String message)</td><td>Llama a super(message). Lanzada ante peticiones malformadas. Manejada con HTTP 400.</td></tr>
+</table>
+
+<!-- 3.2 ConflictException -->
+<h2 class="cls" id="s3-2">3.2 &nbsp;ConflictException</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.exception &nbsp;|&nbsp; Extiende: RuntimeException</p>
+<table>
+  <tr><th style="width:42%">Constructor</th><th>Descripción</th></tr>
+  <tr><td>public ConflictException(String message)</td><td>Llama a super(message). Lanzada ante conflictos de datos (ej. email duplicado). Manejada con HTTP 409.</td></tr>
+</table>
+
+<!-- 3.3 ResourceNotFoundException -->
+<h2 class="cls" id="s3-3">3.3 &nbsp;ResourceNotFoundException</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.exception &nbsp;|&nbsp; Extiende: RuntimeException</p>
+<table>
+  <tr><th style="width:42%">Constructor</th><th>Descripción</th></tr>
+  <tr><td>public ResourceNotFoundException(String message)</td><td>Llama a super(message). Lanzada cuando un recurso no existe en BD. Manejada con HTTP 404.</td></tr>
+</table>
+
+<!-- 3.4 GlobalExceptionHandler -->
+<h2 class="cls" id="s3-4">3.4 &nbsp;GlobalExceptionHandler</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.exception &nbsp;|&nbsp; Anotación: @RestControllerAdvice</p>
+<h3 class="sub">Atributos</h3>
+<table>
+  <tr><th style="width:36%">Modificador</th><th style="width:16%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>private static final</td><td>Logger</td><td>log &nbsp;(LoggerFactory.getLogger(GlobalExceptionHandler.class))</td></tr>
+</table>
+<h3 class="sub">Métodos</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@ExceptionHandler(ResourceNotFoundException.class)<br>public ResponseEntity&lt;Map&lt;String,Object&gt;&gt; handleNotFound(ResourceNotFoundException ex)</td><td>Delega a buildError(NOT_FOUND, ex.getMessage()). Retorna HTTP 404.</td></tr>
+  <tr><td>@ExceptionHandler(BadRequestException.class)<br>public ResponseEntity&lt;Map&lt;String,Object&gt;&gt; handleBadRequest(BadRequestException ex)</td><td>Delega a buildError(BAD_REQUEST, ex.getMessage()). Retorna HTTP 400.</td></tr>
+  <tr><td>@ExceptionHandler(ConflictException.class)<br>public ResponseEntity&lt;Map&lt;String,Object&gt;&gt; handleConflict(ConflictException ex)</td><td>Delega a buildError(CONFLICT, ex.getMessage()). Retorna HTTP 409.</td></tr>
+  <tr><td>@ExceptionHandler(MethodArgumentNotValidException.class)<br>public ResponseEntity&lt;Map&lt;String,Object&gt;&gt; handleValidation(MethodArgumentNotValidException ex)</td><td>Itera errores de binding, construye mapa campo&rarr;mensaje. Retorna HTTP 400 con body {timestamp, status:400, error:"Datos inválidos", campos:{...}}.</td></tr>
+  <tr><td>@ExceptionHandler(Exception.class)<br>public ResponseEntity&lt;Map&lt;String,Object&gt;&gt; handleGeneric(Exception ex)</td><td>Loguea con log.error. Retorna HTTP 500 con mensaje "Error interno del servidor".</td></tr>
+  <tr><td>private ResponseEntity&lt;Map&lt;String,Object&gt;&gt; buildError(HttpStatus status, String mensaje)</td><td>Construye body {timestamp:LocalDateTime.now().toString(), status:status.value(), error:mensaje} y retorna ResponseEntity.status(status).body(body).</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 4. REPOSITORIES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s4">4. Repositories (repository)</h1>
+<p style="margin-bottom:12px">Todos los repositorios son <strong>interfaces</strong> que extienden <code>JpaRepository&lt;Entidad, Long&gt;</code>.</p>
+
+<!-- 4.1 UsuarioRepository -->
+<h2 class="cls" id="s4-1">4.1 &nbsp;UsuarioRepository</h2>
+<p class="meta">extends JpaRepository&lt;Usuario, Long&gt;</p>
+<table>
+  <tr><th style="width:50%">Método</th><th>Descripción</th></tr>
+  <tr><td>Optional&lt;Usuario&gt; findByEmail(String email)</td><td>Busca usuario por email.</td></tr>
+  <tr><td>boolean existsByEmail(String email)</td><td>Verifica si ya existe un usuario con ese email.</td></tr>
+</table>
+
+<!-- 4.2 TareaRepository -->
+<h2 class="cls" id="s4-2">4.2 &nbsp;TareaRepository</h2>
+<p class="meta">extends JpaRepository&lt;Tarea, Long&gt;</p>
+<table>
+  <tr><th style="width:60%">Método</th><th>Descripción</th></tr>
+  <tr><td>List&lt;Tarea&gt; findByUsuarioIdOrderByCreatedAtDesc(Long usuarioId)</td><td>Tareas del usuario, orden createdAt DESC.</td></tr>
+  <tr><td>List&lt;Tarea&gt; findByUsuarioId(Long usuarioId)</td><td>Todas las tareas del usuario.</td></tr>
+  <tr><td>List&lt;Tarea&gt; findByUsuarioIdAndEstado(Long usuarioId, String estado)</td><td>Tareas del usuario filtradas por estado.</td></tr>
+  <tr><td>long countByUsuarioId(Long usuarioId)</td><td>Total de tareas del usuario.</td></tr>
+  <tr><td>long countByUsuarioIdAndEstado(Long usuarioId, String estado)</td><td>Tareas del usuario por estado.</td></tr>
+  <tr><td>@Query("SELECT t.estado AS estado, COUNT(t) AS total FROM Tarea t WHERE t.usuarioId = :usuarioId GROUP BY t.estado")<br>@Param("usuarioId")<br>List&lt;Map&lt;String,Object&gt;&gt; countGroupByEstado(Long usuarioId)</td><td>Conteo agrupado por estado.</td></tr>
+</table>
+
+<!-- 4.3 CuestionarioRepository -->
+<h2 class="cls" id="s4-3">4.3 &nbsp;CuestionarioRepository</h2>
+<p class="meta">extends JpaRepository&lt;Cuestionario, Long&gt;</p>
+<table>
+  <tr><th style="width:56%">Método</th><th>Descripción</th></tr>
+  <tr><td>List&lt;Cuestionario&gt; findByNivel(String nivel)</td><td>Cuestionarios del nivel indicado.</td></tr>
+  <tr><td>List&lt;Cuestionario&gt; findByNivelAndTipo(String nivel, String tipo)</td><td>Cuestionarios por nivel y tipo.</td></tr>
+</table>
+
+<!-- 4.4 PreguntaRepository -->
+<h2 class="cls" id="s4-4">4.4 &nbsp;PreguntaRepository</h2>
+<p class="meta">extends JpaRepository&lt;Pregunta, Long&gt;</p>
+<table>
+  <tr><th style="width:56%">Método</th><th>Descripción</th></tr>
+  <tr><td>List&lt;Pregunta&gt; findByCuestionarioId(Long cuestionarioId)</td><td>Todas las preguntas de un cuestionario.</td></tr>
+</table>
+
+<!-- 4.5 TeoriaRepository -->
+<h2 class="cls" id="s4-5">4.5 &nbsp;TeoriaRepository</h2>
+<p class="meta">extends JpaRepository&lt;Teoria, Long&gt;</p>
+<table>
+  <tr><th style="width:56%">Método</th><th>Descripción</th></tr>
+  <tr><td>List&lt;Teoria&gt; findByCuestionarioIdOrderByOrden(Long cuestionarioId)</td><td>Teorías del cuestionario, ordenadas por orden ASC.</td></tr>
+</table>
+
+<!-- 4.6 LogroRepository -->
+<h2 class="cls" id="s4-6">4.6 &nbsp;LogroRepository</h2>
+<p class="meta">extends JpaRepository&lt;Logro, Long&gt;</p>
+<table>
+  <tr><th style="width:50%">Método</th><th>Descripción</th></tr>
+  <tr><td>Optional&lt;Logro&gt; findByCodigo(String codigo)</td><td>Busca un logro por su código único.</td></tr>
+</table>
+
+<!-- 4.7 LogroUsuarioRepository -->
+<h2 class="cls" id="s4-7">4.7 &nbsp;LogroUsuarioRepository</h2>
+<p class="meta">extends JpaRepository&lt;LogroUsuario, Long&gt;</p>
+<table>
+  <tr><th style="width:60%">Método</th><th>Descripción</th></tr>
+  <tr><td>List&lt;LogroUsuario&gt; findByUsuarioId(Long usuarioId)</td><td>Logros del usuario.</td></tr>
+  <tr><td>boolean existsByUsuarioIdAndLogroId(Long usuarioId, Long logroId)</td><td>Verifica si el usuario ya posee el logro.</td></tr>
+</table>
+
+<!-- 4.8 SimulacionRepository -->
+<h2 class="cls" id="s4-8">4.8 &nbsp;SimulacionRepository</h2>
+<p class="meta">extends JpaRepository&lt;Simulacion, Long&gt;</p>
+<table>
+  <tr><th style="width:62%">Método</th><th>Descripción</th></tr>
+  <tr><td>Optional&lt;Simulacion&gt; findByUsuarioIdAndEstado(Long usuarioId, String estado)</td><td>Simulación del usuario con estado dado.</td></tr>
+  <tr><td>List&lt;Simulacion&gt; findByUsuarioId(Long usuarioId)</td><td>Todas las simulaciones del usuario.</td></tr>
+</table>
+
+<!-- 4.9 SimulacionItemRepository -->
+<h2 class="cls" id="s4-9">4.9 &nbsp;SimulacionItemRepository</h2>
+<p class="meta">extends JpaRepository&lt;SimulacionItem, Long&gt;</p>
+<table>
+  <tr><th style="width:68%">Método</th><th>Descripción</th></tr>
+  <tr><td>List&lt;SimulacionItem&gt; findBySimulacionId(Long simulacionId)</td><td>Ítems de la simulación.</td></tr>
+  <tr><td>List&lt;SimulacionItem&gt; findBySimulacionIdAndEnSprint(Long simulacionId, Boolean enSprint)</td><td>Ítems filtrados por enSprint.</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 5. SERVICES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s5">5. Services (service)</h1>
+
+<!-- 5.1 AuthService -->
+<h2 class="cls" id="s5-1">5.1 &nbsp;AuthService</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.service &nbsp;|&nbsp; Anotación: @Service</p>
+<h3 class="sub">Atributos inyectados</h3>
+<table>
+  <tr><th style="width:28%">Anotación</th><th style="width:28%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>private static final</td><td>Logger</td><td>log</td></tr>
+  <tr><td>@Autowired</td><td>UsuarioRepository</td><td>usuarioRepository</td></tr>
+  <tr><td>@Autowired</td><td>PasswordEncoder</td><td>passwordEncoder</td></tr>
+  <tr><td>@Autowired &nbsp;@Lazy</td><td>GamificacionService</td><td>gamificacionService</td></tr>
+</table>
+<h3 class="sub">Métodos</h3>
+<table>
+  <tr><th style="width:44%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@Transactional<br>public UsuarioResponse registrar(RegisterRequest request)</td><td>Verifica email único con existsByEmail (lanza ConflictException si ya existe). Llama validarPassword. Construye Usuario con nivel="basico", quizzesCompletados=0, puntos=0, createdAt=LocalDateTime.now(). Codifica password con passwordEncoder.encode. Guarda con save. Loguea info. Retorna UsuarioResponse.from(guardado).</td></tr>
+  <tr><td>public UsuarioResponse login(LoginRequest request)</td><td>Busca usuario por email lowercase (lanza BadRequestException si no existe). Verifica password con passwordEncoder.matches (lanza BadRequestException si no coincide). Loguea login exitoso. Retorna UsuarioResponse.from(usuario).</td></tr>
+  <tr><td>@Transactional<br>public UsuarioResponse completarQuiz(Long id)</td><td>Busca usuario por id (ResourceNotFoundException si no existe). Guarda nivelAntes. Incrementa quizzesCompletados +1. Si quizzesCompletados &ge; 4 y nivel=="basico", sube nivel a "avanzado". Guarda. Llama gamificacionService.procesarActividad(id, "QUIZ_COMPLETADO"). Si nivel cambió, llama gamificacionService.procesarActividad(id, "NIVEL_AVANZADO"). Retorna UsuarioResponse.from.</td></tr>
+  <tr><td>private void validarPassword(String password)</td><td>Lanza BadRequestException si: null o length &lt; 8; no tiene mayúscula; no tiene dígito; no tiene carácter especial del set: !@#$%^&amp;*()_+-=[]{}|;':",./&lt;&gt;?</td></tr>
+</table>
+
+<!-- 5.2 TareaService -->
+<h2 class="cls" id="s5-2">5.2 &nbsp;TareaService</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.service &nbsp;|&nbsp; Anotación: @Service</p>
+<h3 class="sub">Atributos / Constantes</h3>
+<table>
+  <tr><th style="width:28%">Anotación</th><th style="width:28%">Tipo</th><th>Nombre / Valor</th></tr>
+  <tr><td>private static final</td><td>Logger</td><td>log</td></tr>
+  <tr><td>private static final</td><td>List&lt;String&gt;</td><td>ESTADOS_VALIDOS = List.of("pendiente", "en_proceso", "completada")</td></tr>
+  <tr><td>@Autowired</td><td>TareaRepository</td><td>tareaRepository</td></tr>
+  <tr><td>@Autowired &nbsp;@Lazy</td><td>GamificacionService</td><td>gamificacionService</td></tr>
+</table>
+<h3 class="sub">Métodos</h3>
+<table>
+  <tr><th style="width:44%">Firma</th><th>Descripción</th></tr>
+  <tr><td>public List&lt;Tarea&gt; obtenerPorUsuario(Long usuarioId)</td><td>Retorna tareaRepository.findByUsuarioIdOrderByCreatedAtDesc(usuarioId).</td></tr>
+  <tr><td>@Transactional<br>public Tarea crear(TareaRequest request)</td><td>Construye Tarea: titulo=trim, estado="pendiente", prioridad (default 5 si null), puntosHistoria (default 3 si null), createdAt=now. Guarda. Llama gamificacionService.procesarActividad(usuarioId, "TAREA_CREADA"). Loguea. Retorna tarea.</td></tr>
+  <tr><td>@Transactional<br>public Tarea actualizarEstado(Long id, String nuevoEstado)</td><td>Valida que nuevoEstado esté en ESTADOS_VALIDOS (BadRequestException si no). Busca tarea (ResourceNotFoundException si no). Actualiza estado. Guarda. Si estado=="completada" y usuarioId != null, llama gamificacionService.procesarActividad(usuarioId, "TAREA_COMPLETADA"). Retorna tarea.</td></tr>
+  <tr><td>public Map&lt;String,Object&gt; obtenerStats(Long usuarioId)</td><td>Llama countGroupByEstado. Itera filas sumando por estado. Retorna Map con: total, pendientes, enProceso, completadas.</td></tr>
+  <tr><td>@Transactional<br>public void eliminar(Long id)</td><td>Verifica existsById (ResourceNotFoundException si no). Llama deleteById. Loguea.</td></tr>
+  <tr><td>@Transactional<br>public Tarea editar(Long id, TareaRequest datos)</td><td>Busca tarea (ResourceNotFoundException si no). Actualiza titulo=trim, descripcion. Si no nulos: prioridad, fechaVencimiento, puntosHistoria. Guarda y retorna.</td></tr>
+</table>
+
+<!-- 5.3 QuizService -->
+<h2 class="cls" id="s5-3">5.3 &nbsp;QuizService</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.service &nbsp;|&nbsp; Anotación: @Service</p>
+<h3 class="sub">Atributos inyectados</h3>
+<table>
+  <tr><th style="width:20%">Anotación</th><th style="width:36%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>CuestionarioRepository</td><td>cuestionarioRepository</td></tr>
+  <tr><td>@Autowired</td><td>PreguntaRepository</td><td>preguntaRepository</td></tr>
+  <tr><td>@Autowired</td><td>TeoriaRepository</td><td>teoriaRepository</td></tr>
+</table>
+<h3 class="sub">Métodos</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>public List&lt;Cuestionario&gt; obtenerTodos()</td><td>Retorna cuestionarioRepository.findAll().</td></tr>
+  <tr><td>public List&lt;Cuestionario&gt; obtenerPorNivel(String nivel)</td><td>Retorna cuestionarioRepository.findByNivel(nivel).</td></tr>
+  <tr><td>public List&lt;Pregunta&gt; obtenerPreguntasPorCuestionario(Long cuestionarioId)</td><td>Retorna preguntaRepository.findByCuestionarioId(cuestionarioId).</td></tr>
+  <tr><td>public List&lt;Teoria&gt; obtenerTeoriaPorCuestionario(Long cuestionarioId)</td><td>Retorna teoriaRepository.findByCuestionarioIdOrderByOrden(cuestionarioId).</td></tr>
+  <tr><td>public Map&lt;String,Object&gt; validarRespuesta(Long preguntaId, String respuesta)</td><td>Busca pregunta (RuntimeException si no). Compara respuestaCorrecta.equalsIgnoreCase(respuesta.trim()). Retorna {correcto, respuestaCorrecta, explicacion ("" si null), puntaje (0 si incorrecto)}.</td></tr>
+</table>
+
+<!-- 5.4 GamificacionService -->
+<h2 class="cls" id="s5-4">5.4 &nbsp;GamificacionService</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.service &nbsp;|&nbsp; Anotación: @Service</p>
+<h3 class="sub">Atributos inyectados</h3>
+<table>
+  <tr><th style="width:20%">Anotación</th><th style="width:36%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>LogroRepository</td><td>logroRepository</td></tr>
+  <tr><td>@Autowired</td><td>LogroUsuarioRepository</td><td>logroUsuarioRepository</td></tr>
+  <tr><td>@Autowired</td><td>UsuarioRepository</td><td>usuarioRepository</td></tr>
+  <tr><td>@Autowired</td><td>TareaRepository</td><td>tareaRepository</td></tr>
+</table>
+<h3 class="sub">Métodos</h3>
+<table>
+  <tr><th style="width:46%">Firma</th><th>Descripción</th></tr>
+  <tr><td>public Map&lt;String,Object&gt; procesarActividad(Long usuarioId, String tipoActividad)</td>
+      <td>Busca usuario (RuntimeException si no). Switch tipoActividad:<br>
+          &bull; TAREA_CREADA: +10 pts; si totalTareas==1 &rarr; otorgarLogro("PRIMERA_TAREA")<br>
+          &bull; TAREA_COMPLETADA: +20 pts; si completadas&ge;5 &rarr; CINCO_TAREAS; si &ge;10 &rarr; DIEZ_TAREAS<br>
+          &bull; QUIZ_COMPLETADO: +50 pts; si quizzes==1 &rarr; PRIMER_QUIZ; si &ge;4 &rarr; TODOS_BASICO; si &ge;8 &rarr; TODOS_AVANZADO<br>
+          &bull; NIVEL_AVANZADO: otorgarLogro("NIVEL_AVANZADO")<br>
+          Suma puntos a usuario, guarda. Retorna {puntosGanados, puntosTotal, nuevosLogros}.</td></tr>
+  <tr><td>private List&lt;Map&lt;String,Object&gt;&gt; otorgarLogro(Usuario usuario, String codigo)</td>
+      <td>Busca logro por código. Si no existe o el usuario ya lo tiene, retorna lista vacía. Crea LogroUsuario (usuarioId, logro, obtenidoAt=now), guarda. Suma puntosRecompensa al usuario. Retorna [{codigo, nombre, icono, puntos}].</td></tr>
+  <tr><td>public List&lt;LogroUsuario&gt; obtenerLogrosUsuario(Long usuarioId)</td><td>Retorna logroUsuarioRepository.findByUsuarioId(usuarioId).</td></tr>
+  <tr><td>public List&lt;Logro&gt; obtenerTodosLogros()</td><td>Retorna logroRepository.findAll().</td></tr>
+</table>
+
+<!-- 5.5 SimulacionService -->
+<h2 class="cls" id="s5-5">5.5 &nbsp;SimulacionService</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.service &nbsp;|&nbsp; Anotación: @Service</p>
+<h3 class="sub">Constantes</h3>
+<table>
+  <tr><th style="width:40%">Nombre / Tipo</th><th>Descripción</th></tr>
+  <tr><td>private static final List&lt;Map&lt;String,Object&gt;&gt; PENDIENTES</td>
+      <td>12 ítems del backlog predefinido con título y storyPoints:
+          "Definir criterios de terminado del equipo" (3), "Crear la lista de pendientes inicial" (5),
+          "Estimar historias con póker de planificación" (5), "Configurar el tablero Kanban del equipo" (2),
+          "Realizar la planificación del Sprint" (3), "Ejecutar reunión diaria durante el Sprint" (2),
+          "Desarrollar funcionalidad de inicio de sesión" (8), "Desarrollar gestión de tareas" (8),
+          "Implementar pruebas unitarias" (5), "Realizar revisión del Sprint con interesados" (3),
+          "Realizar retrospectiva del Sprint" (2), "Documentar el incremento entregado" (3).</td></tr>
+</table>
+<h3 class="sub">Atributos inyectados</h3>
+<table>
+  <tr><th style="width:20%">Anotación</th><th style="width:36%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>SimulacionRepository</td><td>simulacionRepository</td></tr>
+  <tr><td>@Autowired</td><td>SimulacionItemRepository</td><td>simulacionItemRepository</td></tr>
+</table>
+<h3 class="sub">Métodos</h3>
+<table>
+  <tr><th style="width:46%">Firma</th><th>Descripción</th></tr>
+  <tr><td>public Map&lt;String,Object&gt; iniciarSimulacion(Long usuarioId, String sprintGoal, Integer velocidad)</td>
+      <td>Si existe simulación activa la marca como "abandonado" y guarda. Crea Simulacion con estado="activo", velocidadEquipo default 20, createdAt=now. Itera PENDIENTES creando 12 SimulacionItem (enSprint=false, completado=false, orden 1..12). Retorna {simulacion, items}.</td></tr>
+  <tr><td>public Map&lt;String,Object&gt; obtenerSimulacionActiva(Long usuarioId)</td>
+      <td>Busca simulación activa. Si vacío retorna {activa:false}. Si existe retorna {activa:true, simulacion, items}.</td></tr>
+  <tr><td>public SimulacionItem toggleItemSprint(Long itemId)</td>
+      <td>Busca item (RuntimeException si no). Invierte enSprint (!item.getEnSprint()). Guarda y retorna.</td></tr>
+  <tr><td>public SimulacionItem completarItem(Long itemId)</td>
+      <td>Busca item (RuntimeException si no). Pone completado=true. Guarda y retorna.</td></tr>
+  <tr><td>public Map&lt;String,Object&gt; cerrarSprint(Long simulacionId)</td>
+      <td>Busca simulación (RuntimeException si no). Obtiene ítems en sprint. Filtra completados. Calcula planeados y entregados en story points. exitoso = entregados &ge; planeados * 0.8. Marca estado="cerrado", cerradoAt=now. Guarda. Retorna {puntosPlaneados, puntosEntregados, velocidadReal=entregados, exitoso, completados.size(), total=enSprint.size(), retrospectiva}.</td></tr>
+  <tr><td>private String generarRetrospectiva(boolean exitoso, int planeados, int entregados)</td>
+      <td>Si exitoso: "✅ ¡Sprint exitoso! Entregaste X de Y story points. El equipo cumplió el Sprint Goal. Para el próximo Sprint mantén la misma velocidad y mejora la calidad del código."<br>Si no: "⚠️ Sprint incompleto. Solo entregaste X de Y story points. Revisa si el equipo sobre-comprometió capacidad o si hubo impedimentos. Considera reducir el alcance del próximo Sprint."</td></tr>
+</table>
+
+<!-- 5.6 ScormService -->
+<h2 class="cls" id="s5-6">5.6 &nbsp;ScormService</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.service &nbsp;|&nbsp; Anotación: @Service</p>
+<h3 class="sub">Constantes / Atributos</h3>
+<table>
+  <tr><th style="width:28%">Anotación / Modificador</th><th style="width:24%">Tipo</th><th>Nombre / Valor</th></tr>
+  <tr><td>private static final</td><td>Logger</td><td>log</td></tr>
+  <tr><td>private static final</td><td>String</td><td>BACKEND_URL = "https://taskflow-1t03.onrender.com"</td></tr>
+  <tr><td>@Autowired</td><td>CuestionarioRepository</td><td>cuestionarioRepository</td></tr>
+  <tr><td>@Autowired</td><td>PreguntaRepository</td><td>preguntaRepository</td></tr>
+  <tr><td>@Autowired</td><td>TeoriaRepository</td><td>teoriaRepository</td></tr>
+  <tr><td>@Autowired</td><td>ResourceLoader</td><td>resourceLoader</td></tr>
+</table>
+<h3 class="sub">Métodos públicos</h3>
+<table>
+  <tr><th style="width:48%">Firma</th><th>Descripción</th></tr>
+  <tr><td>public byte[] generarPaqueteAplicacion() throws IOException</td>
+      <td>Crea ZIP SCORM 1.2 con: imsmanifest.xml (buildAppManifest), scorm_init.js (buildScormInitJs), CSS estáticos (style.css, style.min.css, style_additions.css, style_additions.min.css, login.css, login.min.css), JS con API_BASE inyectada vía injectApiBase (script.js, script.min.js, login.js, login.min.js), HTML con scorm_init.js inyectado vía injectScormScript (login.html, index.html). Retorna byte[].</td></tr>
+  <tr><td>public byte[] generarPaqueteCuestionario(Long cuestionarioId) throws IOException</td>
+      <td>Busca cuestionario (ResourceNotFoundException si no). Obtiene preguntas y teorías. Crea ZIP con: imsmanifest.xml (buildQuizManifest), scorm12.js (buildScorm12Js), style.css (buildQuizCss), index.html (buildQuizHtml). Retorna byte[].</td></tr>
+</table>
+<h3 class="sub">Métodos privados</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>private String buildAppManifest()</td><td>Genera imsmanifest.xml SCORM 1.2 para la app completa. identifier="taskflow_app_scorm", masteryscore=60, href="login.html", lista todos los archivos CSS/JS/HTML.</td></tr>
+  <tr><td>private String buildQuizManifest(Cuestionario c)</td><td>Genera imsmanifest.xml para cuestionario individual. identifier="taskflow_scorm_{c.id}", masteryscore=60, href="index.html".</td></tr>
+  <tr><td>private String buildScormInitJs()</td><td>Genera bridge SCORM 1.2 para la app: findAPI (busca window.API hasta 7 niveles), scormInit, reportarQuiz(porcentaje, aprobado) con tracking de interacciones, scormFinish. Expone window.TaskFlowSCORM.{isActive, reportarQuiz, finish}.</td></tr>
+  <tr><td>private String buildScorm12Js()</td><td>Genera ScormAPI wrapper minificado para quiz individual: {api, initialized, findAPI, init, set, commit, finish(status,raw,max)}.</td></tr>
+  <tr><td>private String buildQuizCss()</td><td>Genera CSS completo del quiz SCORM: layout container, header gradiente, tabs, tarjetas de teoría, barra de progreso, tarjeta de pregunta, botones de opción con estados (correcta/incorrecta), feedback, resultado con score-circle.</td></tr>
+  <tr><td>private String buildQuizHtml(Cuestionario c, List&lt;Pregunta&gt; preguntas, List&lt;Teoria&gt; teorias)</td><td>Genera HTML autónomo con tabs Teoría/Quiz. Serializa preguntas a JSON inline (id, texto, opciones, respuesta, puntaje, explicacion). Implementa JS inline: showTab, show(i), answer(val,btn,p), siguiente, resultado, reiniciar.</td></tr>
+  <tr><td>private String injectApiBase(String js)</td><td>Reemplaza 'const API_BASE = "";' por 'const API_BASE = "https://taskflow-1t03.onrender.com";' en el JS dado.</td></tr>
+  <tr><td>private String injectScormScript(String html)</td><td>Inserta '  &lt;script src="scorm_init.js"&gt;&lt;/script&gt;\n' antes de &lt;/body&gt; (lastIndexOf). Si no existe &lt;/body&gt;, añade al final.</td></tr>
+  <tr><td>private String readStaticText(String filename) throws IOException</td><td>Lee classpath:static/{filename} con resourceLoader.getResource. Retorna contenido como String UTF-8. Si no existe, log.warn y retorna "".</td></tr>
+  <tr><td>private byte[] readStaticBytes(String filename) throws IOException</td><td>Lee classpath:static/{filename}. Retorna byte[]. Si no existe, log.warn y retorna byte[0].</td></tr>
+  <tr><td>private void addStatic(ZipOutputStream zos, String filename) throws IOException</td><td>Lee bytes estáticos con readStaticBytes. Si length==0, no añade. Crea ZipEntry con size, escribe y cierra.</td></tr>
+  <tr><td>private void addText(ZipOutputStream zos, String name, String content) throws IOException</td><td>Convierte content a bytes UTF-8. Crea ZipEntry con name y size, escribe bytes, cierra entry.</td></tr>
+  <tr><td>private String escXml(String s)</td><td>Escapa &amp; → &amp;amp;, &lt; → &amp;lt;, &gt; → &amp;gt;, " → &amp;quot;. Retorna "" si s==null.</td></tr>
+  <tr><td>private String escHtml(String s)</td><td>Escapa &amp;, &lt;, &gt;, ", ' → &amp;#39;. Retorna "" si s==null.</td></tr>
+  <tr><td>private String js(String s)</td><td>Serializa a literal JS con comillas dobles, escapando \\, ", \n, \r, \t. Retorna "null" si s==null.</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 6. CONTROLLERS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s6">6. Controllers (controller)</h1>
+
+<!-- 6.1 AuthController -->
+<h2 class="cls" id="s6-1">6.1 &nbsp;AuthController</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.controller &nbsp;|&nbsp; Anotación: @RestController</p>
+<h3 class="sub">Dependencias</h3>
+<table><tr><th style="width:20%">Anotación</th><th style="width:28%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>AuthService</td><td>authService</td></tr></table>
+<h3 class="sub">Endpoints</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@PostMapping("/usuarios")<br>public ResponseEntity&lt;UsuarioResponse&gt; registrar(@Valid @RequestBody RegisterRequest request)</td>
+      <td>Llama authService.registrar(request). Retorna HTTP 201 CREATED con UsuarioResponse.</td></tr>
+  <tr><td>@PostMapping("/login")<br>public ResponseEntity&lt;UsuarioResponse&gt; login(@Valid @RequestBody LoginRequest request)</td>
+      <td>Llama authService.login(request). Retorna HTTP 200 con UsuarioResponse.</td></tr>
+  <tr><td>@PostMapping("/usuarios/{id}/completar-quiz")<br>public ResponseEntity&lt;UsuarioResponse&gt; completarQuiz(@PathVariable Long id)</td>
+      <td>Llama authService.completarQuiz(id). Retorna HTTP 200 con UsuarioResponse.</td></tr>
+</table>
+
+<!-- 6.2 TareaController -->
+<h2 class="cls" id="s6-2">6.2 &nbsp;TareaController</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.controller &nbsp;|&nbsp; Anotación: @RestController</p>
+<h3 class="sub">Dependencias</h3>
+<table><tr><th style="width:20%">Anotación</th><th style="width:28%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>TareaService</td><td>tareaService</td></tr></table>
+<h3 class="sub">Endpoints</h3>
+<table>
+  <tr><th style="width:55%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@GetMapping("/tareas")<br>public ResponseEntity&lt;List&lt;Tarea&gt;&gt; obtenerTareas(@RequestParam Long usuarioId)</td>
+      <td>Retorna HTTP 200 con lista de tareas del usuario.</td></tr>
+  <tr><td>@PostMapping("/tareas")<br>public ResponseEntity&lt;Tarea&gt; crearTarea(@Valid @RequestBody TareaRequest request)</td>
+      <td>Retorna HTTP 201 CREATED con la tarea creada.</td></tr>
+  <tr><td>@PatchMapping("/tareas/{id}/status")<br>public ResponseEntity&lt;Tarea&gt; actualizarEstado(@PathVariable Long id, @RequestBody Map&lt;String,String&gt; body)</td>
+      <td>Lee body.get("estado"). Llama tareaService.actualizarEstado. Retorna HTTP 200 con tarea.</td></tr>
+  <tr><td>@GetMapping("/api/user/stats")<br>public ResponseEntity&lt;Map&lt;String,Object&gt;&gt; obtenerStats(@RequestParam Long usuarioId)</td>
+      <td>Retorna HTTP 200 con mapa de estadísticas.</td></tr>
+  <tr><td>@DeleteMapping("/tareas/{id}")<br>public ResponseEntity&lt;Map&lt;String,String&gt;&gt; eliminarTarea(@PathVariable Long id)</td>
+      <td>Llama tareaService.eliminar(id). Retorna HTTP 200 con {mensaje:"Tarea eliminada correctamente"}.</td></tr>
+  <tr><td>@PutMapping("/tareas/{id}")<br>public ResponseEntity&lt;Tarea&gt; editarTarea(@PathVariable Long id, @Valid @RequestBody TareaRequest request)</td>
+      <td>Retorna HTTP 200 con la tarea editada.</td></tr>
+</table>
+
+<!-- 6.3 QuizController -->
+<h2 class="cls" id="s6-3">6.3 &nbsp;QuizController</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.controller &nbsp;|&nbsp; Anotaciones: @RestController &middot; @CrossOrigin(origins="*") &middot; @RequestMapping("/api")</p>
+<h3 class="sub">Dependencias</h3>
+<table><tr><th style="width:20%">Anotación</th><th style="width:30%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>QuizService</td><td>quizService</td></tr>
+  <tr><td>@Autowired</td><td>UsuarioRepository</td><td>usuarioRepository</td></tr></table>
+<h3 class="sub">Endpoints</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@GetMapping("/quiz")<br>public ResponseEntity&lt;?&gt; obtenerQuizzes()</td><td>Retorna quizService.obtenerTodos(). HTTP 500 si excepción.</td></tr>
+  <tr><td>@GetMapping("/quiz/nivel/{nivel}")<br>public ResponseEntity&lt;?&gt; obtenerPorNivel(@PathVariable String nivel)</td><td>Retorna quizService.obtenerPorNivel(nivel). HTTP 500 si excepción.</td></tr>
+  <tr><td>@GetMapping("/quiz/{cuestionarioId}")<br>public ResponseEntity&lt;?&gt; obtenerPreguntas(@PathVariable Long cuestionarioId)</td><td>Retorna quizService.obtenerPreguntasPorCuestionario(cuestionarioId). HTTP 500 si excepción.</td></tr>
+  <tr><td>@GetMapping("/teoria/{cuestionarioId}")<br>public ResponseEntity&lt;?&gt; obtenerTeoria(@PathVariable Long cuestionarioId)</td><td>Retorna quizService.obtenerTeoriaPorCuestionario(cuestionarioId). HTTP 500 si excepción.</td></tr>
+  <tr><td>@PostMapping("/quiz/answer")<br>public ResponseEntity&lt;?&gt; validarRespuesta(@RequestBody Map&lt;String,String&gt; body)</td><td>Parsea Long.parseLong(body.get("preguntaId")) y body.get("respuesta"). Llama quizService.validarRespuesta. HTTP 500 si excepción.</td></tr>
+  <tr><td>@GetMapping("/user/progress")<br>public ResponseEntity&lt;?&gt; obtenerProgreso(@RequestParam Long usuarioId)</td><td>Busca usuario con usuarioRepository.findById (RuntimeException si no). Retorna {nivel, quizzesCompletados, totalQuizzes:8}. HTTP 500 si excepción.</td></tr>
+</table>
+
+<!-- 6.4 GamificacionController -->
+<h2 class="cls" id="s6-4">6.4 &nbsp;GamificacionController</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.controller &nbsp;|&nbsp; Anotaciones: @RestController &middot; @CrossOrigin(origins="*") &middot; @RequestMapping("/api/gamificacion")</p>
+<h3 class="sub">Dependencias</h3>
+<table><tr><th style="width:20%">Anotación</th><th style="width:30%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>GamificacionService</td><td>gamificacionService</td></tr></table>
+<h3 class="sub">Endpoints</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@PostMapping("/actividad")<br>public ResponseEntity&lt;?&gt; procesarActividad(@RequestBody Map&lt;String,Object&gt; body)</td>
+      <td>Parsea Long.parseLong(body.get("usuarioId").toString()) y body.get("tipo").toString(). Llama gamificacionService.procesarActividad. HTTP 500 si excepción.</td></tr>
+  <tr><td>@GetMapping("/logros/{usuarioId}")<br>public ResponseEntity&lt;?&gt; obtenerLogros(@PathVariable Long usuarioId)</td>
+      <td>Retorna gamificacionService.obtenerLogrosUsuario(usuarioId). HTTP 500 si excepción.</td></tr>
+  <tr><td>@GetMapping("/logros")<br>public ResponseEntity&lt;?&gt; obtenerTodos()</td>
+      <td>Retorna gamificacionService.obtenerTodosLogros(). HTTP 500 si excepción.</td></tr>
+</table>
+
+<!-- 6.5 SimulacionController -->
+<h2 class="cls" id="s6-5">6.5 &nbsp;SimulacionController</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.controller &nbsp;|&nbsp; Anotaciones: @RestController &middot; @CrossOrigin(origins="*") &middot; @RequestMapping("/api/simulacion")</p>
+<h3 class="sub">Dependencias</h3>
+<table><tr><th style="width:20%">Anotación</th><th style="width:30%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>@Autowired</td><td>SimulacionService</td><td>simulacionService</td></tr></table>
+<h3 class="sub">Endpoints</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@PostMapping("/iniciar")<br>public ResponseEntity&lt;?&gt; iniciar(@RequestBody Map&lt;String,Object&gt; body)</td>
+      <td>Parsea usuarioId, goal=body.getOrDefault("metaSprint", body.getOrDefault("sprintGoal","Completar el Sprint")), velocidad (default 20). Llama simulacionService.iniciarSimulacion. HTTP 500 si excepción.</td></tr>
+  <tr><td>@GetMapping("/activa/{usuarioId}")<br>public ResponseEntity&lt;?&gt; obtenerActiva(@PathVariable Long usuarioId)</td>
+      <td>Retorna simulacionService.obtenerSimulacionActiva(usuarioId). HTTP 500 si excepción.</td></tr>
+  <tr><td>@PatchMapping("/item/{itemId}/toggle")<br>public ResponseEntity&lt;?&gt; toggleItem(@PathVariable Long itemId)</td>
+      <td>Retorna simulacionService.toggleItemSprint(itemId). HTTP 500 si excepción.</td></tr>
+  <tr><td>@PatchMapping("/item/{itemId}/completar")<br>public ResponseEntity&lt;?&gt; completarItem(@PathVariable Long itemId)</td>
+      <td>Retorna simulacionService.completarItem(itemId). HTTP 500 si excepción.</td></tr>
+  <tr><td>@PostMapping("/cerrar/{simulacionId}")<br>public ResponseEntity&lt;?&gt; cerrarSprint(@PathVariable Long simulacionId)</td>
+      <td>Retorna simulacionService.cerrarSprint(simulacionId). HTTP 500 si excepción.</td></tr>
+</table>
+
+<!-- 6.6 ScormController -->
+<h2 class="cls" id="s6-6">6.6 &nbsp;ScormController</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.controller &nbsp;|&nbsp; Anotaciones: @RestController &middot; @RequestMapping("/api/scorm")</p>
+<h3 class="sub">Atributos / Dependencias</h3>
+<table><tr><th style="width:24%">Modificador / Anotación</th><th style="width:24%">Tipo</th><th>Nombre</th></tr>
+  <tr><td>private static final</td><td>Logger</td><td>log</td></tr>
+  <tr><td>@Autowired</td><td>ScormService</td><td>scormService</td></tr></table>
+<h3 class="sub">Endpoints</h3>
+<table>
+  <tr><th style="width:52%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@GetMapping("/app")<br>public ResponseEntity&lt;byte[]&gt; exportarAplicacion()</td>
+      <td>Llama scormService.generarPaqueteAplicacion(). Llama zipResponse(zip, "taskflow_scorm_app.zip"). Si IOException, loguea error y retorna ResponseEntity.internalServerError().build().</td></tr>
+  <tr><td>@GetMapping("/quiz/{cuestionarioId}")<br>public ResponseEntity&lt;byte[]&gt; exportarQuiz(@PathVariable Long cuestionarioId)</td>
+      <td>Llama scormService.generarPaqueteCuestionario(cuestionarioId). Llama zipResponse(zip, "taskflow_scorm_quiz_{cuestionarioId}.zip"). Si IOException, loguea y retorna HTTP 500.</td></tr>
+  <tr><td>private ResponseEntity&lt;byte[]&gt; zipResponse(byte[] zip, String filename)</td>
+      <td>Crea HttpHeaders con Content-Type=APPLICATION_OCTET_STREAM, Content-Disposition=attachment;filename, ContentLength=zip.length. Loguea info. Retorna ResponseEntity.ok().headers(h).body(zip).</td></tr>
+</table>
+
+<!-- 6.7 HomeController -->
+<h2 class="cls" id="s6-7">6.7 &nbsp;HomeController</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.controller &nbsp;|&nbsp; Anotación: @Controller &nbsp;(no @RestController)</p>
+<table>
+  <tr><th style="width:40%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@GetMapping("/")<br>public String home()</td><td>Retorna "forward:/login.html". Sirve el frontend desde la raíz de la aplicación.</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 7. CONFIG -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s7">7. Configuración (config)</h1>
+
+<!-- 7.1 AppConfig -->
+<h2 class="cls" id="s7-1">7.1 &nbsp;AppConfig</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow.config &nbsp;|&nbsp; Anotación: @Configuration</p>
+<table>
+  <tr><th style="width:44%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@Bean<br>public PasswordEncoder passwordEncoder()</td>
+      <td>Retorna <code>new BCryptPasswordEncoder(10)</code>. Bean disponible para inyección en AuthService.</td></tr>
+  <tr><td>@Bean<br>public WebMvcConfigurer corsConfigurer()</td>
+      <td>Configura CORS global: allowedOriginPatterns("*"), allowedMethods(GET, POST, PUT, PATCH, DELETE, OPTIONS), allowedHeaders("*"), allowCredentials(false). Aplica al mapping "/**".</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 8. INFRAESTRUCTURA -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1 class="sec" id="s8">8. Infraestructura Spring Boot</h1>
+
+<!-- 8.1 TaskflowApplication -->
+<h2 class="cls" id="s8-1">8.1 &nbsp;TaskflowApplication</h2>
+<p class="meta">Paquete: com.ingenieria.taskflow &nbsp;|&nbsp; Anotación: @SpringBootApplication &nbsp;|&nbsp; Extiende: SpringBootServletInitializer</p>
+<table>
+  <tr><th style="width:50%">Firma</th><th>Descripción</th></tr>
+  <tr><td>@Override<br>protected SpringApplicationBuilder configure(SpringApplicationBuilder builder)</td>
+      <td>Retorna builder.sources(TaskflowApplication.class). Permite despliegue como WAR en servidores de aplicaciones externos.</td></tr>
+  <tr><td>public static void main(String[] args)</td>
+      <td>Punto de entrada de la aplicación: SpringApplication.run(TaskflowApplication.class, args).</td></tr>
+</table>
+
+</div><!-- /page -->
+</body>
+</html>

@@ -8,6 +8,25 @@ import java.util.Map;
 import com.ingenieria.taskflow.model.Usuario;
 
 
+/**
+ * Controlador REST del modulo educativo de quizzes de TaskFlow.
+ * <p>
+ * Expone endpoints para obtener cuestionarios, teoria y preguntas, validar
+ * respuestas y consultar el progreso educativo del usuario.
+ * Base: {@code /api}
+ * </p>
+ * <ul>
+ *   <li>{@code GET /api/quiz} — Todos los cuestionarios</li>
+ *   <li>{@code GET /api/quiz/nivel/{nivel}} — Cuestionarios por nivel</li>
+ *   <li>{@code GET /api/quiz/{id}} — Preguntas de un cuestionario</li>
+ *   <li>{@code GET /api/teoria/{id}} — Teoria de un cuestionario</li>
+ *   <li>{@code POST /api/quiz/answer} — Validar respuesta</li>
+ *   <li>{@code GET /api/user/progress} — Progreso educativo del usuario</li>
+ * </ul>
+ *
+ * @author TaskFlow CM
+ * @version 1.0
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api")

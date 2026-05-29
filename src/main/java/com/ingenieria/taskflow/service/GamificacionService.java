@@ -7,6 +7,19 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Servicio que implementa el sistema de gamificacion de TaskFlow.
+ * <p>
+ * Procesa actividades del usuario (crear tareas, completarlas, aprobar quizzes,
+ * subir de nivel) y otorga puntos y logros segun los umbrales definidos.
+ * Los tipos de actividad soportados son: {@code TAREA_CREADA} (+10 pts),
+ * {@code TAREA_COMPLETADA} (+20 pts), {@code QUIZ_COMPLETADO} (+50 pts),
+ * {@code NIVEL_AVANZADO} (otorga logro, sin puntos adicionales directos).
+ * </p>
+ *
+ * @author TaskFlow CM
+ * @version 1.0
+ */
 @Service
 public class GamificacionService {
 
@@ -15,6 +28,16 @@ public class GamificacionService {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private TareaRepository tareaRepository;
 
+    /**
+     * Procesa una actividad del usuario y otorga puntos y logros correspondientes.
+     * Tipos soportados: {@code TAREA_CREADA} (+10), {@code TAREA_COMPLETADA} (+20),
+     * {@code QUIZ_COMPLETADO} (+50), {@code NIVEL_AVANZADO} (logro sin puntos directos).
+     *
+     * @param usuarioId     ID del usuario que realizo la actividad
+     * @param tipoActividad tipo de actividad realizada
+     * @return mapa con: {@code puntosGanados}, {@code puntosTotal}, {@code nuevosLogros}
+     * @throws RuntimeException si el usuario no existe
+     */
     public Map<String, Object> procesarActividad(Long usuarioId, String tipoActividad) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -63,6 +86,14 @@ public class GamificacionService {
         );
     }
 
+    /**
+     * Intenta otorgar un logro al usuario si aun no lo tiene.
+     * Si el logro no existe en la base de datos o el usuario ya lo tiene, no hace nada.
+     *
+     * @param usuario entidad del usuario que podria recibir el logro
+     * @param codigo  codigo del logro a otorgar (ej: {@code "PRIMERA_TAREA"})
+     * @return lista con los datos del logro otorgado, o lista vacia si no se otorgo
+     */
     private List<Map<String, Object>> otorgarLogro(Usuario usuario, String codigo) {
         List<Map<String, Object>> resultado = new ArrayList<>();
         Optional<Logro> logro = logroRepository.findByCodigo(codigo);
@@ -90,10 +121,21 @@ public class GamificacionService {
         return resultado;
     }
 
+    /**
+     * Obtiene todos los logros obtenidos por un usuario especifico.
+     *
+     * @param usuarioId ID del usuario
+     * @return lista de registros {@code LogroUsuario} con el logro y la fecha de obtencion
+     */
     public List<LogroUsuario> obtenerLogrosUsuario(Long usuarioId) {
         return logroUsuarioRepository.findByUsuarioId(usuarioId);
     }
 
+    /**
+     * Obtiene la definicion completa de todos los logros disponibles en el sistema.
+     *
+     * @return lista de todos los logros registrados en la base de datos
+     */
     public List<Logro> obtenerTodosLogros() {
         return logroRepository.findAll();
     }

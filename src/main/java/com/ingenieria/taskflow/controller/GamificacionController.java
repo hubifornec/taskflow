@@ -6,6 +6,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
+/**
+ * Controlador REST del sistema de gamificacion de TaskFlow.
+ * <p>
+ * Permite procesar actividades manualmente y consultar los logros
+ * globales del sistema o los obtenidos por un usuario especifico.
+ * Base: {@code /api/gamificacion}
+ * </p>
+ * <ul>
+ *   <li>{@code POST /api/gamificacion/actividad} — Procesar actividad (puntos y logros)</li>
+ *   <li>{@code GET  /api/gamificacion/logros} — Todos los logros del sistema</li>
+ *   <li>{@code GET  /api/gamificacion/logros/{usuarioId}} — Logros obtenidos por un usuario</li>
+ * </ul>
+ *
+ * @author TaskFlow CM
+ * @version 1.0
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/gamificacion")
